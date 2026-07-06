@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DEMO_FEEDS } from "@/lib/data/locations";
+import { getSyntheticUploadDemos } from "@/lib/demo-footage";
 import {
   processVideoMock,
   simulateUploadProgress,
@@ -46,9 +47,16 @@ export default function UploadPage() {
     ms: number;
   } | null>(null);
   const [activeFeed, setActiveFeed] = useState<string | null>(null);
+  const [activeDemoFootage, setActiveDemoFootage] = useState<string | null>(null);
+  const syntheticDemos = getSyntheticUploadDemos();
 
   const runPipeline = useCallback(
-    async (source: { fileName?: string; feedId?: string; fileSize?: number }) => {
+    async (source: {
+      fileName?: string;
+      feedId?: string;
+      fileSize?: number;
+      demoFootageId?: string;
+    }) => {
       try {
         setStage("uploading");
         if (source.fileSize) {
@@ -60,6 +68,7 @@ export default function UploadPage() {
         const result = await processVideoMock({
           fileName: source.fileName,
           feedId: source.feedId,
+          demoFootageId: source.demoFootageId,
         });
         addEvents(result.events);
         setLastResult({
@@ -85,16 +94,27 @@ export default function UploadPage() {
     }
     setFileName(file.name);
     setActiveFeed(null);
+    setActiveDemoFootage(null);
     setLastResult(null);
     await runPipeline({ fileName: file.name, fileSize: file.size });
   }
 
   async function handleDemoFeed(feedId: string, name: string) {
     setActiveFeed(feedId);
+    setActiveDemoFootage(null);
     setFileName(name);
     setLastResult(null);
     setStage("uploading");
     await runPipeline({ feedId, fileName: name });
+  }
+
+  async function handleSyntheticDemoFootage(demoFootageId: string, title: string) {
+    setActiveDemoFootage(demoFootageId);
+    setActiveFeed(null);
+    setFileName(title);
+    setLastResult(null);
+    setStage("uploading");
+    await runPipeline({ demoFootageId, fileName: title });
   }
 
   return (
@@ -183,6 +203,55 @@ export default function UploadPage() {
           )}
         </CardContent>
       </Card>
+
+      <div>
+        <h2 className="mb-2 text-lg font-semibold">Try with demo footage</h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Demo mode uses synthetic metadata only. No real CCTV, stock footage, or public dataset
+          video is bundled in this app.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {syntheticDemos.map((demo) => (
+            <Card key={demo.id} className="shadow-sm">
+              <CardHeader className="pb-2">
+                <div className="flex aspect-video items-center justify-center rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 text-slate-400">
+                  <Video className="size-10" />
+                </div>
+                <CardTitle className="mt-3 text-base">{demo.title}</CardTitle>
+                <CardDescription>{demo.locationLabel}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                <p className="text-xs text-muted-foreground">{demo.description}</p>
+                <div className="flex flex-wrap gap-1">
+                  {demo.suggestedDetections.map((d) => (
+                    <Badge key={d} variant="secondary" className="text-xs font-normal">
+                      {d}
+                    </Badge>
+                  ))}
+                </div>
+                <Button
+                  size="sm"
+                  variant={activeDemoFootage === demo.id ? "default" : "outline"}
+                  disabled={stage === "uploading" || stage === "processing"}
+                  onClick={() => handleSyntheticDemoFootage(demo.id, demo.title)}
+                >
+                  {activeDemoFootage === demo.id && stage !== "idle" && stage !== "complete" ? (
+                    <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
+                  ) : null}
+                  Run synthetic demo
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Browse the full catalog on{" "}
+          <Link href="/dashboard/demo-footage" className="font-medium text-primary hover:underline">
+            Demo Footage Library
+          </Link>
+          .
+        </p>
+      </div>
 
       <div>
         <h2 className="mb-4 text-lg font-semibold">Demo CCTV feeds — Barasat pilot</h2>

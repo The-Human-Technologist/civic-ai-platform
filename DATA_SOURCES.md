@@ -1,6 +1,6 @@
 # Data Sources & Footage Policy
 
-**AI Civic Operations & Road Safety Intelligence Platform**  
+**AI Civic Operations & Road Safety Intelligence Platform**
 Maintained by [The Human Technologist](https://github.com/The-Human-Technologist)
 
 ---
@@ -12,6 +12,8 @@ The **public alpha (v0.1)** ships with **mock detections only**. This repository
 This document defines **allowed** footage and dataset sources for Phase 2 development, demos, and future municipal pilots — and what is **never** permitted.
 
 **Dashboard:** [Live demo → Data Sources](https://civic-ai-platform-three.vercel.app/dashboard/data-sources)
+
+**Demo Footage Library:** [Dashboard catalog](https://civic-ai-platform-three.vercel.app/dashboard/demo-footage) · [docs/demo-footage-library.md](docs/demo-footage-library.md) — metadata-only entries (synthetic placeholders, stock/dataset candidates, pilot slots). No raw video in Git.
 
 ---
 

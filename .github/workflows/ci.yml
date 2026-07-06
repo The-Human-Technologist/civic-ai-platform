@@ -35,6 +35,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Verify footage policy
+        run: npm run verify:footage
+
       - name: Build
         run: npm run build
         env:

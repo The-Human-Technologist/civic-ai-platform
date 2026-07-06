@@ -30,7 +30,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "prepare:data": "node scripts/prepare-demo-data.mjs"
+    "prepare:data": "node scripts/prepare-demo-data.mjs",
+    "verify:footage": "node scripts/verify-footage-policy.js"
   },
   "engines": {
     "node": ">=20"

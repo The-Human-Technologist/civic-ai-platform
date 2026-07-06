@@ -20,6 +20,7 @@ import type {
   Severity,
 } from "@/types";
 import { LOCATIONS } from "@/lib/data/locations";
+import { getDemoFootageById } from "@/lib/demo-footage";
 
 const EVENT_TEMPLATES: Record<
   EventType,
@@ -240,7 +241,7 @@ export interface MockProcessingResult {
  * poll job status, merge returned DetectionEvent[] into database.
  */
 export async function processVideoMock(
-  source: { fileName?: string; feedId?: string },
+  source: { fileName?: string; feedId?: string; demoFootageId?: string },
 ): Promise<MockProcessingResult> {
   const delay = 1800 + Math.random() * 1200;
   await new Promise((resolve) => setTimeout(resolve, delay));
@@ -256,18 +257,24 @@ export async function processVideoMock(
     (source.feedId && feedLocationMap[source.feedId]) ||
     pick(locationKeys);
 
-  const typePool: EventType[] = source.feedId?.includes("school")
-    ? ["overspeeding_estimate", "helmet_violation", "crowd_congestion", "illegal_parking"]
-    : source.feedId?.includes("colony")
-      ? ["wrong_way_driving", "helmet_violation", "crowd_congestion", "illegal_parking"]
-      : [
-          "illegal_parking",
-          "pothole",
-          "garbage_overflow",
-          "waterlogging",
-          "crowd_congestion",
-          "road_blockage",
-        ];
+  const demoFootage = source.demoFootageId
+    ? getDemoFootageById(source.demoFootageId)
+    : undefined;
+
+  const typePool: EventType[] = demoFootage?.mockEventTypes?.length
+    ? demoFootage.mockEventTypes
+    : source.feedId?.includes("school")
+      ? ["overspeeding_estimate", "helmet_violation", "crowd_congestion", "illegal_parking"]
+      : source.feedId?.includes("colony")
+        ? ["wrong_way_driving", "helmet_violation", "crowd_congestion", "illegal_parking"]
+        : [
+            "illegal_parking",
+            "pothole",
+            "garbage_overflow",
+            "waterlogging",
+            "crowd_congestion",
+            "road_blockage",
+          ];
 
   const count = 2 + Math.floor(Math.random() * 3);
   const events: DetectionEvent[] = Array.from({ length: count }, (_, i) => {

@@ -238,8 +238,8 @@ This lets a municipality, traffic unit, or WEBEL team **evaluate software workfl
 
 ## Screenshots
 
-> **Before grant or OpenAI OSS application submission:** capture and commit all 9 PNGs listed below.  
-> Screenshots are **not included yet** — follow [docs/screenshots/README.md](docs/screenshots/README.md) (≈30 min on the live demo).  
+> **Before grant or OpenAI OSS application submission:** capture and commit all 9 PNGs listed below.
+> Screenshots are **not included yet** — follow [docs/screenshots/README.md](docs/screenshots/README.md) (≈30 min on the live demo).
 > Until then, reviewers should use the **[live demo](https://civic-ai-platform-three.vercel.app)** or run locally.
 
 | # | Page | File (pending) | Capture guide |
@@ -547,6 +547,22 @@ The **public repository contains mock data only** — no real CCTV, no bundled v
 **Not allowed:** random open CCTV scraping, committing raw video to GitHub, identifiable faces/plates in public demos, automatic enforcement pipelines.
 
 We do **not** claim the MVP is trained on real Kolkata/Barasat CCTV.
+
+---
+
+## Demo Footage Library
+
+The app catalogs **demo footage metadata** separately from the broader data-source registry — no raw videos are bundled in the repository.
+
+| Topic | Detail |
+|-------|--------|
+| **Dashboard** | [/dashboard/demo-footage](https://civic-ai-platform-three.vercel.app/dashboard/demo-footage) — filters by type, license, privacy risk |
+| **Upload demos** | Three synthetic cards on [/dashboard/upload](https://civic-ai-platform-three.vercel.app/dashboard/upload) — mock detections only |
+| **Policy doc** | [docs/demo-footage-library.md](docs/demo-footage-library.md) — how to add stock clips, datasets, and pilot footage safely |
+| **CI check** | `npm run verify:footage` — fails if `.mp4`, datasets, or model weights are committed |
+| **Full policy** | [DATA_SOURCES.md](DATA_SOURCES.md) — allowed/prohibited sources and pilot rules |
+
+Stock clips and public datasets require **manual license verification** before any live demo or training use.
 
 ---
 
