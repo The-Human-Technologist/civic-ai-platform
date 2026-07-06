@@ -67,9 +67,9 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-muted/30">
-      <aside className="dashboard-sidebar hidden w-64 shrink-0 flex-col border-r bg-background lg:flex">
-        <div className="flex items-center gap-2.5 border-b px-5 py-5">
+    <div className="flex h-screen overflow-hidden bg-muted/30">
+      <aside className="dashboard-sidebar hidden h-full w-64 shrink-0 flex-col border-r bg-background lg:flex">
+        <div className="flex shrink-0 items-center gap-2.5 border-b px-5 py-5">
           <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Shield className="size-5" />
           </div>
@@ -78,7 +78,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <p className="text-xs text-muted-foreground">Barasat · N24 Parganas</p>
           </div>
         </div>
-        <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
           <NavLinks />
           <Separator />
           <div className="rounded-lg border bg-muted/50 p-3 text-xs text-muted-foreground">
@@ -86,13 +86,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <p className="mt-1">All AI detections await municipal or traffic authority confirmation. No automatic challan.</p>
           </div>
         </div>
-        <div className="border-t p-4 text-xs text-muted-foreground">
+        <div className="shrink-0 border-t p-4 text-xs text-muted-foreground">
           <Link href="/" className="hover:text-foreground">{PLATFORM_NAME}</Link>
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="dashboard-topbar flex h-14 items-center justify-between border-b bg-background px-4 lg:px-6">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="dashboard-topbar flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6">
           <div className="flex items-center gap-3">
             <Sheet>
               <SheetTrigger
@@ -129,7 +129,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </LinkButton>
           </div>
         </header>
-        <main className="min-w-0 flex-1 overflow-x-hidden p-4 lg:p-6">{children}</main>
+        <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );
