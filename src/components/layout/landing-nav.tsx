@@ -16,9 +16,8 @@ const PROPOSAL_NAV = [
   { href: "#challenges", label: "Challenges" },
   { href: "#timeline", label: "Timeline" },
   { href: "#privacy", label: "Privacy" },
-  { href: "#security", label: "Security" },
   { href: "#outcomes", label: "Outcomes" },
-  { href: "#success-metrics", label: "Metrics" },
+  { href: "#security", label: "Security" },
 ] as const;
 
 type LandingNavProps = {
@@ -53,9 +52,11 @@ export function LandingNav({ variant = "home" }: LandingNavProps) {
           ) : null}
         </nav>
         <div className="flex items-center gap-2">
-          <LinkButton variant="ghost" size="sm" href="/pilot-proposal">
-            Proposal
-          </LinkButton>
+          {variant === "home" ? (
+            <LinkButton variant="ghost" size="sm" href="/pilot-proposal">
+              Proposal
+            </LinkButton>
+          ) : null}
           <LinkButton variant="ghost" size="sm" href="/dashboard">
             Dashboard
           </LinkButton>

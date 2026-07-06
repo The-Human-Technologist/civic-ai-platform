@@ -140,53 +140,6 @@ export default function PilotProposalPage() {
           </p>
         </section>
 
-        <section id="outcomes" className="mb-12 scroll-mt-24">
-          <h2 className="text-xl font-semibold">Expected outcomes</h2>
-          <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
-            {PILOT_PROPOSAL.expectedOutcomes.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ol>
-        </section>
-
-        <section id="privacy" className="mb-12 scroll-mt-24">
-          <h2 className="flex items-center gap-2 text-xl font-semibold">
-            <Shield className="size-5 text-primary" />
-            Privacy safeguards
-          </h2>
-          <ul className="mt-4 flex flex-col gap-2">
-            {PILOT_PROPOSAL.privacySafeguards.map((item) => (
-              <li key={item} className="flex gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section id="security" className="mb-12 scroll-mt-24">
-          <h2 className="flex items-center gap-2 text-xl font-semibold">
-            <Users className="size-5 text-primary" />
-            Departments involved
-          </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {PILOT_PROPOSAL.departments.map((dept) => (
-              <Card key={dept.name}>
-                <CardHeader className="pb-2">
-                  <div className="flex items-start gap-2">
-                    <Building2 className="mt-0.5 size-4 text-primary" />
-                    <CardTitle className="text-base">{dept.name}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  <p>{dept.role}</p>
-                  <p className="mt-2 text-xs">{dept.contact}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
         <section id="timeline" className="mb-12 scroll-mt-24">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <Calendar className="size-5 text-primary" />
@@ -205,6 +158,56 @@ export default function PilotProposalPage() {
                   </ul>
                 </div>
               </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="privacy" className="mb-12 scroll-mt-24">
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <Shield className="size-5 text-primary" />
+            Privacy safeguards
+          </h2>
+          <ul className="mt-4 flex flex-col gap-2">
+            {PILOT_PROPOSAL.privacySafeguards.map((item) => (
+              <li key={item} className="flex gap-2 text-sm text-muted-foreground">
+                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section id="outcomes" className="mb-12 scroll-mt-24">
+          <h2 className="text-xl font-semibold">Expected outcomes</h2>
+          <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
+            {PILOT_PROPOSAL.expectedOutcomes.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ol>
+        </section>
+
+        <section id="security" className="mb-12 scroll-mt-24">
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <Users className="size-5 text-primary" />
+            Security &amp; departments involved
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Municipal, traffic, and civic agencies in the pilot governance loop.
+          </p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {PILOT_PROPOSAL.departments.map((dept) => (
+              <Card key={dept.name}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-start gap-2">
+                    <Building2 className="mt-0.5 size-4 text-primary" />
+                    <CardTitle className="text-base">{dept.name}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  <p>{dept.role}</p>
+                  <p className="mt-2 text-xs">{dept.contact}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </section>
