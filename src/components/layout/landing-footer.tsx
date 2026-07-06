@@ -22,6 +22,7 @@ export function LandingFooter() {
             <span className="font-medium text-foreground">Product</span>
             <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
             <Link href="/pilot-proposal" className="hover:text-foreground">Pilot Proposal</Link>
+            <Link href="/dashboard/demo-footage" className="hover:text-foreground">Demo Footage</Link>
             <Link href="/dashboard/upload" className="hover:text-foreground">Upload demo</Link>
             <a href="https://civic-ai-platform-three.vercel.app" className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Live demo</a>
           </div>

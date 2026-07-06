@@ -41,7 +41,7 @@ const riskVariant = {
 
 export default function DataSourcesPage() {
   return (
-    <div className="flex max-w-5xl flex-col gap-6">
+    <div className="flex min-w-0 max-w-5xl flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Data Sources &amp; Footage Policy</h1>
         <p className="text-sm text-muted-foreground">
@@ -62,6 +62,10 @@ export default function DataSourcesPage() {
             rel="noopener noreferrer"
           >
             DATA_SOURCES.md
+          </Link>{" "}
+          and the{" "}
+          <Link href="/dashboard/demo-footage" className="font-medium underline underline-offset-2">
+            Demo Footage Library
           </Link>{" "}
           in the repository.
         </AlertDescription>
@@ -117,7 +121,38 @@ export default function DataSourcesPage() {
             Metadata only — no video files in the repository. External downloads are manual.
           </CardDescription>
         </CardHeader>
-        <CardContent className="overflow-x-auto p-0 pb-2">
+        <CardContent className="p-0 pb-2">
+          <div className="flex flex-col gap-3 p-4 lg:hidden">
+            {dataSources.map((source) => (
+              <div key={source.id} className="rounded-lg border bg-muted/20 p-4">
+                <p className="font-medium">{source.name}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{DATA_SOURCE_KIND_LABELS[source.kind]}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{source.purpose}</p>
+                {source.url ? (
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    Official link
+                    <ExternalLink className="size-3" />
+                  </a>
+                ) : (
+                  <p className="mt-2 text-xs text-muted-foreground">{source.licenseNote}</p>
+                )}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Badge variant="outline" className="text-xs font-normal">
+                    {DATA_SOURCE_STATUS_LABELS[source.status]}
+                  </Badge>
+                  <Badge variant={riskVariant[source.privacyRisk]} className="text-xs capitalize">
+                    {source.privacyRisk} risk
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto lg:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -169,6 +204,7 @@ export default function DataSourcesPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

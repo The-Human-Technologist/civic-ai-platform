@@ -86,6 +86,8 @@ function UploadPageContent() {
     return entry;
   }, [demoParam]);
 
+  const invalidDemoParam = Boolean(demoParam && !preselectedDemo);
+
   const runPipeline = useCallback(
     async (source: {
       fileName?: string;
@@ -178,6 +180,21 @@ function UploadPageContent() {
         Demo mode: uploaded files are not processed by real AI in this MVP. Detections are synthetic.
         Use only licensed or authorized footage.
       </Badge>
+
+      {invalidDemoParam && (
+        <Alert variant="destructive">
+          <Info className="size-4" />
+          <AlertTitle>Unknown demo scenario</AlertTitle>
+          <AlertDescription>
+            The demo id <code className="rounded bg-muted px-1">{demoParam}</code> is not a valid
+            synthetic placeholder.{" "}
+            <Link href="/dashboard/demo-footage" className="font-medium underline underline-offset-2">
+              Browse Demo Footage Library
+            </Link>{" "}
+            for available mock scenarios.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {preselectedDemo && (
         <Card className="border-primary/30 bg-primary/5 shadow-sm">

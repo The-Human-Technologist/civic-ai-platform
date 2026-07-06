@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore, type ReactNode } from "react";
 import {
   Bar,
   BarChart,
@@ -25,6 +26,27 @@ const CHART_COLORS = [
   "hsl(190 50% 45%)",
 ];
 
+function useIsClient() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
+function ChartMount({ children, className }: { children: ReactNode; className?: string }) {
+  const mounted = useIsClient();
+  return (
+    <div className={className}>
+      {mounted ? (
+        children
+      ) : (
+        <div className="h-full w-full animate-pulse rounded-md bg-muted" aria-hidden />
+      )}
+    </div>
+  );
+}
+
 export function EventsByTypeChart({ events }: { events: DetectionEvent[] }) {
   const data = Object.entries(
     events.reduce<Record<string, number>>((acc, e) => {
@@ -43,12 +65,19 @@ export function EventsByTypeChart({ events }: { events: DetectionEvent[] }) {
         <CardTitle className="text-base">Detection categories</CardTitle>
         <CardDescription>Barasat pilot corridor — reviewed &amp; pending events</CardDescription>
       </CardHeader>
-      <CardContent className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="vertical" margin={{ left: 8, right: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-            <XAxis type="number" allowDecimals={false} />
-            <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
+      <CardContent className="h-72 min-w-0">
+        <ChartMount className="h-full w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} layout="vertical" margin={{ left: 4, right: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <XAxis type="number" allowDecimals={false} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={100}
+                tick={{ fontSize: 10 }}
+                tickFormatter={(v: string) => (v.length > 18 ? `${v.slice(0, 16)}…` : v)}
+              />
             <Tooltip />
             <Bar dataKey="count" radius={[0, 4, 4, 0]}>
               {data.map((_, i) => (
@@ -57,6 +86,7 @@ export function EventsByTypeChart({ events }: { events: DetectionEvent[] }) {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+        </ChartMount>
       </CardContent>
     </Card>
   );
@@ -86,8 +116,9 @@ export function ReviewStatusChart({
         <CardTitle className="text-base">Human review outcomes</CardTitle>
         <CardDescription>Municipal &amp; traffic authority disposition</CardDescription>
       </CardHeader>
-      <CardContent className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
+      <CardContent className="h-72 min-w-0">
+        <ChartMount className="h-full w-full">
+          <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
@@ -106,6 +137,7 @@ export function ReviewStatusChart({
             <Tooltip />
           </PieChart>
         </ResponsiveContainer>
+        </ChartMount>
       </CardContent>
     </Card>
   );
@@ -130,8 +162,9 @@ export function WeeklyTrendChart({ events }: { events: DetectionEvent[] }) {
         <CardTitle className="text-base">Weekly detection volume</CardTitle>
         <CardDescription>Pilot period trend — Station Road &amp; Colony More corridor</CardDescription>
       </CardHeader>
-      <CardContent className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
+      <CardContent className="h-64 min-w-0">
+        <ChartMount className="h-full w-full">
+          <ResponsiveContainer width="100%" height="100%">
           <BarChart data={counts}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="day" />
@@ -140,6 +173,7 @@ export function WeeklyTrendChart({ events }: { events: DetectionEvent[] }) {
             <Bar dataKey="events" fill="hsl(220 70% 45%)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
+        </ChartMount>
       </CardContent>
     </Card>
   );

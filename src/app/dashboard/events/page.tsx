@@ -67,7 +67,7 @@ export default function EventsPage() {
   if (!hydrated) return <DashboardLoading />;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-w-0 flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Events &amp; Detections</h1>
         <p className="text-sm text-muted-foreground">
@@ -77,9 +77,11 @@ export default function EventsPage() {
 
       <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 shadow-sm lg:flex-row lg:flex-wrap lg:items-end">
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Event type</label>
+          <label htmlFor="events-filter-type" className="text-xs font-medium text-muted-foreground">
+            Event type
+          </label>
           <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v ?? "all")}>
-            <SelectTrigger className="w-full min-w-[180px]">
+            <SelectTrigger id="events-filter-type" className="w-full min-w-[180px]">
               <SelectValue placeholder="All types" />
             </SelectTrigger>
             <SelectContent>
@@ -93,9 +95,11 @@ export default function EventsPage() {
           </Select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Status</label>
+          <label htmlFor="events-filter-status" className="text-xs font-medium text-muted-foreground">
+            Status
+          </label>
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "all")}>
-            <SelectTrigger className="w-full min-w-[160px]">
+            <SelectTrigger id="events-filter-status" className="w-full min-w-[160px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -109,9 +113,11 @@ export default function EventsPage() {
           </Select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Severity</label>
+          <label htmlFor="events-filter-severity" className="text-xs font-medium text-muted-foreground">
+            Severity
+          </label>
           <Select value={severityFilter} onValueChange={(v) => setSeverityFilter(v ?? "all")}>
-            <SelectTrigger className="w-full min-w-[140px]">
+            <SelectTrigger id="events-filter-severity" className="w-full min-w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -125,8 +131,11 @@ export default function EventsPage() {
           </Select>
         </div>
         <div className="flex flex-1 flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Location</label>
+          <label htmlFor="events-filter-location" className="text-xs font-medium text-muted-foreground">
+            Location
+          </label>
           <Input
+            id="events-filter-location"
             placeholder="Filter by location…"
             value={locationFilter}
             onChange={(e) => setLocationFilter(e.target.value)}
@@ -141,7 +150,45 @@ export default function EventsPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border bg-card shadow-sm">
+      {filtered.length === 0 ? (
+        <div className="rounded-lg border border-dashed bg-card p-10 text-center text-sm text-muted-foreground shadow-sm">
+          No events match filters. Try clearing one or more filters above.
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-3 lg:hidden">
+            {filtered.map((e) => (
+              <div
+                key={e.id}
+                className="flex flex-col gap-3 rounded-lg border bg-card p-4 shadow-sm"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-xs text-muted-foreground">{e.id}</span>
+                  <Badge variant={severityVariant[e.severity]}>{SEVERITY_LABELS[e.severity]}</Badge>
+                </div>
+                <div>
+                  <p className="font-medium">{EVENT_TYPE_LABELS[e.type as EventType]}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{e.location.name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {formatDateTime(e.timestamp)} · {formatConfidence(e.confidence)} ·{" "}
+                    <span className={cn(e.status === "pending" && "font-medium text-amber-600")}>
+                      {STATUS_LABELS[e.status]}
+                    </span>
+                  </p>
+                </div>
+                <LinkButton
+                  size="sm"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  href={`/dashboard/events/${encodeURIComponent(e.id)}`}
+                >
+                  Review
+                </LinkButton>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden rounded-lg border bg-card shadow-sm lg:block">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -157,47 +204,42 @@ export default function EventsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                    No events match filters
+              {filtered.map((e) => (
+                <TableRow key={e.id}>
+                  <TableCell className="font-mono text-xs">{e.id}</TableCell>
+                  <TableCell className="text-sm">{EVENT_TYPE_LABELS[e.type as EventType]}</TableCell>
+                  <TableCell className="max-w-[200px] text-sm">{e.location.name}</TableCell>
+                  <TableCell className="whitespace-nowrap text-xs">{formatDateTime(e.timestamp)}</TableCell>
+                  <TableCell>{formatConfidence(e.confidence)}</TableCell>
+                  <TableCell>
+                    <Badge variant={severityVariant[e.severity]}>{SEVERITY_LABELS[e.severity]}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className={cn("text-xs", e.status === "pending" && "font-medium text-amber-600")}>
+                      {STATUS_LABELS[e.status]}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <LinkButton
+                      size="sm"
+                      variant="outline"
+                      href={`/dashboard/events/${encodeURIComponent(e.id)}`}
+                    >
+                      Review
+                    </LinkButton>
                   </TableCell>
                 </TableRow>
-              ) : (
-                filtered.map((e) => (
-                  <TableRow key={e.id}>
-                    <TableCell className="font-mono text-xs">{e.id}</TableCell>
-                    <TableCell className="text-sm">{EVENT_TYPE_LABELS[e.type as EventType]}</TableCell>
-                    <TableCell className="max-w-[140px] truncate text-sm">{e.location.name}</TableCell>
-                    <TableCell className="whitespace-nowrap text-xs">{formatDateTime(e.timestamp)}</TableCell>
-                    <TableCell>{formatConfidence(e.confidence)}</TableCell>
-                    <TableCell>
-                      <Badge variant={severityVariant[e.severity]}>{SEVERITY_LABELS[e.severity]}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className={cn("text-xs", e.status === "pending" && "font-medium text-amber-600")}>
-                        {STATUS_LABELS[e.status]}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <LinkButton
-                        size="sm"
-                        variant="outline"
-                        href={`/dashboard/events/${encodeURIComponent(e.id)}`}
-                      >
-                        Review
-                      </LinkButton>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+              ))}
             </TableBody>
           </Table>
         </div>
-        <p className="border-t px-4 py-2 text-xs text-muted-foreground">
-          Showing {filtered.length} of {events.length} events
-        </p>
-      </div>
+          </div>
+        </>
+      )}
+
+      <p className="text-xs text-muted-foreground">
+        Showing {filtered.length} of {events.length} events · Mock detections — human review required
+      </p>
     </div>
   );
 }

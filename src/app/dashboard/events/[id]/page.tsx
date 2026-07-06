@@ -43,10 +43,17 @@ export default function EventReviewPage({
 
   if (!event) {
     return (
-      <div className="flex flex-col gap-4">
-        <p>Event not found: {id}</p>
+      <div className="mx-auto flex max-w-lg flex-col gap-4 text-center">
+        <Alert variant="destructive">
+          <AlertTriangle className="size-4" />
+          <AlertTitle>Event not found</AlertTitle>
+          <AlertDescription>
+            No detection with ID <span className="font-mono">{id}</span> exists in the demo dataset.
+            It may have been reset or the link is outdated.
+          </AlertDescription>
+        </Alert>
         <LinkButton variant="outline" href="/dashboard/events">
-          Back to events
+          Back to detections
         </LinkButton>
       </div>
     );
@@ -190,7 +197,7 @@ export default function EventReviewPage({
             </Button>
             <Button variant="outline" onClick={exportReport}>
               <Download className="size-4" data-icon="inline-start" />
-              Export evidence report
+              Export evidence report (mock JSON)
             </Button>
           </div>
         </CardContent>
