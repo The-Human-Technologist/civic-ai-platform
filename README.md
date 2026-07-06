@@ -472,7 +472,18 @@ git push -u origin main
 
 Click **Deploy**. Vercel runs `npm install` and `npm run build` automatically.
 
-After the first deploy, set `NEXT_PUBLIC_APP_URL` to your production URL and redeploy so Open Graph links resolve correctly.
+**Live demo (deployed):** https://civic-ai-platform-three.vercel.app
+
+### 4b. Connect GitHub → Vercel auto-deploy (one-time, org repo)
+
+The repo lives under **The-Human-Technologist**. To auto-deploy on every `git push`:
+
+1. Open [vercel.com/titasdatta12s-projects/civic-ai-platform/settings/git](https://vercel.com/titasdatta12s-projects/civic-ai-platform/settings/git)
+2. **Connect Git Repository** → choose **The-Human-Technologist/civic-ai-platform**
+3. If the org is not listed: GitHub → **The-Human-Technologist** → **Settings → GitHub Apps → Vercel** → grant access to `civic-ai-platform`
+4. Production branch: `master`
+
+Until connected, deploy manually: `npx vercel deploy --prod` from the project folder.
 
 ### 5. Verify production
 
