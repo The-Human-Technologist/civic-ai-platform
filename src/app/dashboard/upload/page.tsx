@@ -1,9 +1,18 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { Suspense, useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Camera, CheckCircle2, Loader2, Upload, Video } from "lucide-react";
+import {
+  Camera,
+  CheckCircle2,
+  Film,
+  Info,
+  Loader2,
+  Upload,
+  Video,
+} from "lucide-react";
 import { LinkButton } from "@/components/ui/link-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DEMO_FEEDS } from "@/lib/data/locations";
-import { getSyntheticUploadDemos } from "@/lib/demo-footage";
+import { getDemoFootageById, getSyntheticUploadDemos } from "@/lib/demo-footage";
 import {
   processVideoMock,
   simulateUploadProgress,
@@ -36,7 +45,25 @@ const STAGE_LABELS: Record<ProcessingStage, string> = {
   error: "Error",
 };
 
+function UploadPageFallback() {
+  return (
+    <div className="flex max-w-4xl flex-col gap-6">
+      <div className="h-8 w-64 animate-pulse rounded bg-muted" />
+      <div className="h-24 animate-pulse rounded-xl bg-muted" />
+    </div>
+  );
+}
+
 export default function UploadPage() {
+  return (
+    <Suspense fallback={<UploadPageFallback />}>
+      <UploadPageContent />
+    </Suspense>
+  );
+}
+
+function UploadPageContent() {
+  const searchParams = useSearchParams();
   const { addEvents } = useEventStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<ProcessingStage>("idle");
@@ -49,6 +76,15 @@ export default function UploadPage() {
   const [activeFeed, setActiveFeed] = useState<string | null>(null);
   const [activeDemoFootage, setActiveDemoFootage] = useState<string | null>(null);
   const syntheticDemos = getSyntheticUploadDemos();
+
+  const demoParam = searchParams.get("demo");
+
+  const preselectedDemo = useMemo(() => {
+    if (!demoParam) return null;
+    const entry = getDemoFootageById(demoParam);
+    if (!entry || entry.type !== "synthetic_placeholder") return null;
+    return entry;
+  }, [demoParam]);
 
   const runPipeline = useCallback(
     async (source: {
@@ -117,19 +153,125 @@ export default function UploadPage() {
     await runPipeline({ demoFootageId, fileName: title });
   }
 
+  const showProgressPanel = stage !== "idle" || lastResult !== null;
+
   return (
     <div className="flex max-w-4xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Video Upload &amp; Demo Feeds</h1>
-        <p className="text-sm text-muted-foreground">
-          Upload CCTV footage or select Barasat pilot demo feeds. AI detections are simulated for MVP.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Video Upload &amp; Demo Feeds</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Upload CCTV footage or select Barasat pilot demo feeds. AI detections are simulated for
+            MVP.
+          </p>
+        </div>
+        <Link
+          href="/dashboard/demo-footage"
+          className="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          <Film className="size-4" />
+          Browse Demo Footage Library
+        </Link>
       </div>
 
       <Badge variant="outline" className="w-fit border-amber-500/60 bg-amber-500/5 text-amber-900 dark:text-amber-200">
         Demo mode: uploaded files are not processed by real AI in this MVP. Detections are synthetic.
         Use only licensed or authorized footage.
       </Badge>
+
+      {preselectedDemo && (
+        <Card className="border-primary/30 bg-primary/5 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Selected demo: {preselectedDemo.title}</CardTitle>
+            <CardDescription>{preselectedDemo.locationLabel}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Use case
+              </p>
+              <p className="mt-1 text-sm leading-relaxed">{preselectedDemo.useCase}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Suggested detections
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {preselectedDemo.suggestedDetections.map((d) => (
+                  <Badge key={d} variant="secondary" className="font-normal">
+                    {d}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <Alert className="border-amber-500/40 bg-amber-500/5">
+              <Info className="size-4 text-amber-700 dark:text-amber-400" />
+              <AlertDescription className="text-sm text-amber-950 dark:text-amber-100">
+                This is a synthetic mock scenario. No real video is processed.
+              </AlertDescription>
+            </Alert>
+            <Button
+              disabled={stage === "uploading" || stage === "processing"}
+              onClick={() =>
+                handleSyntheticDemoFootage(preselectedDemo.id, preselectedDemo.title)
+              }
+            >
+              {stage === "uploading" || stage === "processing" ? (
+                <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
+              ) : (
+                <Video className="size-4" data-icon="inline-start" />
+              )}
+              Run Mock Processing
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {showProgressPanel && (
+        <div className="rounded-lg border bg-card p-4 shadow-sm">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+            <span className="font-medium">{fileName ?? "Processing…"}</span>
+            <span className="text-muted-foreground">{STAGE_LABELS[stage]}</span>
+          </div>
+          <Progress value={STAGE_PROGRESS[stage]} className="h-2" />
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+            <Badge
+              variant={
+                stage === "uploading" || stage === "processing" || stage === "complete"
+                  ? "default"
+                  : "outline"
+              }
+            >
+              {stage === "uploading" || stage === "processing" ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : (
+                <CheckCircle2 className="size-3" />
+              )}
+              Uploading
+            </Badge>
+            <Badge
+              variant={stage === "processing" || stage === "complete" ? "default" : "outline"}
+            >
+              {stage === "processing" ? <Loader2 className="size-3 animate-spin" /> : null}
+              Processing
+            </Badge>
+            <Badge variant={stage === "complete" ? "default" : "outline"}>
+              Detections generated
+            </Badge>
+          </div>
+          {lastResult && stage === "complete" && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Analyzed {lastResult.frames} frames in {(lastResult.ms / 1000).toFixed(1)}s ·{" "}
+              {lastResult.count} events queued for review.
+            </p>
+          )}
+          {stage === "complete" && (
+            <LinkButton href="/dashboard/events" className="mt-4">
+              Review new detections
+            </LinkButton>
+          )}
+        </div>
+      )}
 
       <Alert>
         <Video className="size-4" />
@@ -170,37 +312,6 @@ export default function UploadPage() {
               Select video
             </Button>
           </div>
-
-          {(stage !== "idle" || fileName) && (
-            <div className="rounded-lg border p-4">
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="font-medium">{fileName ?? "Processing…"}</span>
-                <span className="text-muted-foreground">{STAGE_LABELS[stage]}</span>
-              </div>
-              <Progress value={STAGE_PROGRESS[stage]} className="h-2" />
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                <Badge variant={stage === "uploading" || stage === "processing" || stage === "complete" ? "default" : "outline"}>
-                  {stage === "uploading" || stage === "processing" ? <Loader2 className="size-3 animate-spin" /> : <CheckCircle2 className="size-3" />}
-                  Uploading
-                </Badge>
-                <Badge variant={stage === "processing" || stage === "complete" ? "default" : "outline"}>
-                  {stage === "processing" ? <Loader2 className="size-3 animate-spin" /> : null}
-                  Processing
-                </Badge>
-                <Badge variant={stage === "complete" ? "default" : "outline"}>Detections generated</Badge>
-              </div>
-              {lastResult && stage === "complete" && (
-                <p className="mt-3 text-sm text-muted-foreground">
-                  Analyzed {lastResult.frames} frames in {(lastResult.ms / 1000).toFixed(1)}s ·{" "}
-                  {lastResult.count} events queued for review.
-                </p>
-              )}
-            </div>
-          )}
-
-          {stage === "complete" && (
-            <LinkButton href="/dashboard/events">Review new detections</LinkButton>
-          )}
         </CardContent>
       </Card>
 
@@ -210,7 +321,7 @@ export default function UploadPage() {
           Demo mode uses synthetic metadata only. No real CCTV, stock footage, or public dataset
           video is bundled in this app.
         </p>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {syntheticDemos.map((demo) => (
             <Card key={demo.id} className="shadow-sm">
               <CardHeader className="pb-2">
@@ -221,7 +332,7 @@ export default function UploadPage() {
                 <CardDescription>{demo.locationLabel}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                <p className="text-xs text-muted-foreground">{demo.description}</p>
+                <p className="text-xs leading-relaxed text-muted-foreground">{demo.description}</p>
                 <div className="flex flex-wrap gap-1">
                   {demo.suggestedDetections.map((d) => (
                     <Badge key={d} variant="secondary" className="text-xs font-normal">
@@ -231,11 +342,17 @@ export default function UploadPage() {
                 </div>
                 <Button
                   size="sm"
-                  variant={activeDemoFootage === demo.id ? "default" : "outline"}
+                  variant={
+                    activeDemoFootage === demo.id || preselectedDemo?.id === demo.id
+                      ? "default"
+                      : "outline"
+                  }
                   disabled={stage === "uploading" || stage === "processing"}
                   onClick={() => handleSyntheticDemoFootage(demo.id, demo.title)}
                 >
-                  {activeDemoFootage === demo.id && stage !== "idle" && stage !== "complete" ? (
+                  {activeDemoFootage === demo.id &&
+                  stage !== "idle" &&
+                  stage !== "complete" ? (
                     <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
                   ) : null}
                   Run synthetic demo
@@ -245,17 +362,16 @@ export default function UploadPage() {
           ))}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Browse the full catalog on{" "}
+          Full catalog:{" "}
           <Link href="/dashboard/demo-footage" className="font-medium text-primary hover:underline">
             Demo Footage Library
           </Link>
-          .
         </p>
       </div>
 
       <div>
         <h2 className="mb-4 text-lg font-semibold">Demo CCTV feeds — Barasat pilot</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {DEMO_FEEDS.map((feed) => (
             <Card key={feed.id} className="shadow-sm">
               <CardHeader className="pb-2">
@@ -266,8 +382,10 @@ export default function UploadPage() {
                 <CardDescription>{feed.thumbnailLabel}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                <p className="text-xs text-muted-foreground">{feed.description}</p>
-                <Badge variant="secondary" className="w-fit">{feed.status}</Badge>
+                <p className="text-xs leading-relaxed text-muted-foreground">{feed.description}</p>
+                <Badge variant="secondary" className="w-fit">
+                  {feed.status}
+                </Badge>
                 <Button
                   size="sm"
                   variant={activeFeed === feed.id ? "default" : "outline"}

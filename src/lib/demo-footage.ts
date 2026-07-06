@@ -45,6 +45,51 @@ export const LICENSE_STATUS_LABELS: Record<LicenseStatus, string> = {
   requires_permission: "Requires written permission",
 };
 
+export const PRIVACY_RISK_LABELS: Record<DemoFootage["privacyRisk"], string> = {
+  low: "Low privacy risk",
+  medium: "Medium privacy risk",
+  high: "High privacy risk",
+};
+
+export type DemoFootageGroup = {
+  id: string;
+  title: string;
+  description: string;
+  entryIds: string[];
+};
+
+export const DEMO_FOOTAGE_GROUPS: DemoFootageGroup[] = [
+  {
+    id: "public-mock",
+    title: "Safe for public mock demo",
+    description:
+      "Synthetic placeholders — metadata only, safe for live demos and grant walkthroughs.",
+    entryIds: [
+      "synthetic-barasat-junction",
+      "synthetic-monsoon-waterlogging",
+      "synthetic-garbage-overflow",
+    ],
+  },
+  {
+    id: "manual-license",
+    title: "Manual license verification required",
+    description:
+      "External stock clips and research datasets — verify terms before any download or demo use.",
+    entryIds: [
+      "stock-traffic-candidate",
+      "bdd100k-candidate",
+      "aicity-candidate",
+      "bmd45-style-candidate",
+    ],
+  },
+  {
+    id: "official-permission",
+    title: "Requires official permission",
+    description: "Reserved for municipality pilot footage with written authorization.",
+    entryIds: ["authorized-municipal-placeholder"],
+  },
+];
+
 /** IDs for upload page “Try with demo footage” cards — synthetic only */
 export const SYNTHETIC_UPLOAD_DEMO_IDS = [
   "synthetic-barasat-junction",
