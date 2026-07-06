@@ -1,27 +1,34 @@
-# Screenshots — pending for public alpha
+# Screenshots — captured
 
-PNG files are **not committed yet**. Add them here before grant applications, OpenAI OSS submission, or LinkedIn launch posts.
+Nine website-only PNGs are committed for README, GitHub, OpenAI OSS, and proposal sharing.
 
-## Required files (9)
+## Files
 
-| File | Status | Guide |
-|------|--------|-------|
-| `landing.png` | ⏳ Pending | [README §1](README.md#1-landing-page) |
-| `dashboard.png` | ⏳ Pending | [README §2](README.md#2-dashboard-overview) |
-| `video-upload-demo.png` | ⏳ Pending | [README §3](README.md#3-video-upload--demo-processing) |
-| `events-table.png` | ⏳ Pending | [README §4](README.md#4-events-table) |
-| `event-review.png` | ⏳ Pending | [README §5](README.md#5-event-review-page) |
-| `hotspot-map.png` | ⏳ Pending | [README §6](README.md#6-hotspot--map-page) |
-| `report.png` | ⏳ Pending | [README §7](README.md#7-reports-page) |
-| `privacy.png` | ⏳ Pending | [README §8](README.md#8-privacy--settings-page) |
-| `pilot-proposal.png` | ⏳ Pending | [README §9](README.md#9-pilot-proposal-page) |
+| File | URL |
+|------|-----|
+| `landing.png` | `/` |
+| `dashboard.png` | `/dashboard` |
+| `upload-demo.png` | `/dashboard/upload?demo=synthetic-barasat-junction` |
+| `demo-footage.png` | `/dashboard/demo-footage` |
+| `data-sources.png` | `/dashboard/data-sources` |
+| `events.png` | `/dashboard/events` |
+| `event-review.png` | `/dashboard/events/EVT-BRS-2401` |
+| `pilot-proposal.png` | `/pilot-proposal` |
+| `privacy.png` | `/dashboard/settings` |
 
-## Fastest capture path
+## Re-capture
 
-1. Open **https://civic-ai-platform-three.vercel.app** (or `npm run dev` locally)
-2. Follow [README.md](README.md) — desktop 1440×900, light mode
-3. Save PNGs in this folder with exact filenames above
-4. Commit: `git add docs/screenshots/*.png && git commit -m "docs: add application screenshots"`
-5. Uncomment the image block in the root [README.md](../../README.md) screenshots section (optional)
+```bash
+npm run dev
+npm run capture:screenshots
+```
 
-**Do not** capture real CCTV, faces, or number plates — mock UI only.
+Optional production URL:
+
+```bash
+SCREENSHOT_BASE_URL=https://civic-ai-platform-three.vercel.app npm run capture:screenshots
+```
+
+Viewport: **1440×900** · Playwright Chromium · website viewport only (no browser chrome or OS taskbar).
+
+See [README.md](README.md) for framing notes.
