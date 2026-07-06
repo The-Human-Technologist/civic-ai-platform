@@ -12,6 +12,8 @@ Documentation for grant reviewers, civic-tech evaluators, and contributors.
 | [docs/architecture.md](architecture.md) | Developers | System diagrams (MVP + Phase 2) |
 | [docs/good-first-issues.md](good-first-issues.md) | Students, new contributors | Curated first PR tasks |
 | [COPYRIGHT](../COPYRIGHT) | Legal | AGPL & commercial licensing note |
+| [DATA_SOURCES.md](../DATA_SOURCES.md) | Contributors, reviewers | Footage & dataset policy |
+| [docs/data/README.md](data/README.md) | Developers | Local data folder architecture |
 | [src/lib/data/README.md](../src/lib/data/README.md) | Developers | Synthetic sample data policy |
 | [screenshots/README.md](screenshots/README.md) | Marketing, grants | Screenshot capture guide (9 required views) |
 | [demo-script.md](demo-script.md) | MLA, municipal, OSS reviewers | 90-second live demo script |
@@ -40,5 +42,6 @@ Documentation for grant reviewers, civic-tech evaluators, and contributors.
 | `/dashboard` | Operations overview |
 | `/dashboard/events` | Detection log |
 | `/dashboard/upload` | Mock video processing |
+| `/dashboard/data-sources` | Footage & dataset policy |
 | `/dashboard/reports` | Pilot report |
 | `/dashboard/settings` | Privacy settings |

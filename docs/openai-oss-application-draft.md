@@ -101,6 +101,8 @@ We publish explicit **non-goals** in the repository: no automatic challans, no f
 **Repository:** https://github.com/The-Human-Technologist/civic-ai-platform (default branch: `master`)  
 **CI:** GitHub Actions — typecheck, lint, build on every push (passing).
 
+**Footage policy:** The project intentionally does **not** bundle or scrape real CCTV footage. Phase 2 will use licensed public datasets and/or authorized pilot footage. [DATA_SOURCES.md](https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/DATA_SOURCES.md) defines allowed sources, prohibited sources, and contributor privacy rules. The MVP uses mock detections only.
+
 ---
 
 ## 6. Technical roadmap

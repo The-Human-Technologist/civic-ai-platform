@@ -32,6 +32,7 @@ Turn **existing CCTV and uploaded video** into **human-reviewed** civic and road
 | **Data** | Browser `localStorage` with 35 fake Barasat events — no production database |
 | **Next milestone** | **Phase 2** — YOLO/OpenCV worker, PostgreSQL, real inference API |
 | **Contributors wanted** | CV engineers, civic-tech devs, i18n, accessibility — see [good first issues](docs/good-first-issues.md) |
+| **Footage policy** | [DATA_SOURCES.md](DATA_SOURCES.md) — no real CCTV in repo; mock only by default |
 
 **Quick start:** `npm install && npm run dev` → [http://localhost:3000](http://localhost:3000)
 
@@ -58,6 +59,7 @@ Turn **existing CCTV and uploaded video** into **human-reviewed** civic and road
 - [Installation](#installation)
 - [Deploy on Vercel](#deploy-on-vercel)
 - [Mock AI processing](#how-mock-ai-processing-works-mvp)
+- [Footage and datasets](#footage-and-datasets)
 - [Contributing](#contributing)
 - [Student contributors](#student-contributors-github-education)
 - [License](#license)
@@ -526,6 +528,25 @@ Upload or demo feed
 ```
 
 Seed data: **35 events** (`EVT-BRS-2401` … `2435`), public Barasat place names only — [synthetic data policy](src/lib/data/README.md).
+
+---
+
+## Footage and datasets
+
+The **public repository contains mock data only** — no real CCTV, no bundled video datasets, no model weights.
+
+| Topic | Detail |
+|-------|--------|
+| **Policy** | [DATA_SOURCES.md](DATA_SOURCES.md) — allowed sources, prohibited sources, pilot rules |
+| **Architecture** | [docs/data/README.md](docs/data/README.md) — local `data/` folder (gitignored) |
+| **Dashboard** | [Data Sources](https://civic-ai-platform-three.vercel.app/dashboard/data-sources) on live demo |
+| **Local setup** | `npm run prepare:data` — creates ignored folders + example metadata (no downloads) |
+
+**Allowed for Phase 2:** public research datasets (manual download), licensed stock clips (external links), synthetic demo footage, self-recorded masked video (local only), authorized municipal pilot footage (written permission).
+
+**Not allowed:** random open CCTV scraping, committing raw video to GitHub, identifiable faces/plates in public demos, automatic enforcement pipelines.
+
+We do **not** claim the MVP is trained on real Kolkata/Barasat CCTV.
 
 ---
 

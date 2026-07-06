@@ -46,9 +46,9 @@ Claim benefits: [education.github.com/pack](https://education.github.com/pack)
 
 ## Before you start
 
-1. Read [README.md](README.md) (mission & MVP scope), [PRIVACY.md](PRIVACY.md), and [SECURITY.md](SECURITY.md).
+1. Read [README.md](README.md) (mission & MVP scope), [PRIVACY.md](PRIVACY.md), [SECURITY.md](SECURITY.md), and [DATA_SOURCES.md](../DATA_SOURCES.md).
 2. Understand that this MVP uses **mock detections only** — do not wire real enforcement systems in contributions without explicit maintainer discussion.
-3. Never commit secrets, real CCTV footage, or identifiable personal data.
+3. Never commit secrets, real CCTV footage, raw video datasets, or identifiable personal data.
 
 ---
 

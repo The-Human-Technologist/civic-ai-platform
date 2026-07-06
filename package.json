@@ -29,7 +29,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare:data": "node scripts/prepare-demo-data.mjs"
   },
   "engines": {
     "node": ">=20"

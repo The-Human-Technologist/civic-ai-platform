@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Camera, CheckCircle2, Loader2, Upload, Video } from "lucide-react";
 import { LinkButton } from "@/components/ui/link-button";
@@ -104,6 +105,11 @@ export default function UploadPage() {
           Upload CCTV footage or select Barasat pilot demo feeds. AI detections are simulated for MVP.
         </p>
       </div>
+
+      <Badge variant="outline" className="w-fit border-amber-500/60 bg-amber-500/5 text-amber-900 dark:text-amber-200">
+        Demo mode: uploaded files are not processed by real AI in this MVP. Detections are synthetic.
+        Use only licensed or authorized footage.
+      </Badge>
 
       <Alert>
         <Video className="size-4" />
@@ -211,7 +217,11 @@ export default function UploadPage() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        {DEMO_DATA_NOTICE} {/* REAL AI INTEGRATION: POST /api/videos → worker queue → PostgreSQL */}
+        {DEMO_DATA_NOTICE}{" "}
+        <Link href="/dashboard/data-sources" className="font-medium text-primary hover:underline">
+          Data sources &amp; footage policy
+        </Link>
+        . {/* REAL AI INTEGRATION: POST /api/videos → worker queue → PostgreSQL */}
       </p>
     </div>
   );
