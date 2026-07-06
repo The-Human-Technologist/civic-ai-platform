@@ -20,7 +20,8 @@ Turn **existing CCTV and uploaded video** into **human-reviewed** civic and road
 
 > **Honest scope:** This repository ships a **working demo dashboard** with **synthetic AI detections**. It is suitable for pilots, grants, and contributor onboarding — not for production deployment without completing [ROADMAP.md](ROADMAP.md) Phases 2–5 and local legal review. See [PRIVACY.md](PRIVACY.md) · [SECURITY.md](SECURITY.md).
 
-**Quick start:** `npm install && npm run dev` → [http://localhost:3000](http://localhost:3000)
+**Quick start:** `npm install && npm run dev` → [http://localhost:3000](http://localhost:3000)  
+**Live demo:** [https://civic-ai-platform-three.vercel.app](https://civic-ai-platform-three.vercel.app) · [GitHub](https://github.com/The-Human-Technologist/civic-ai-platform)
 
 ---
 
@@ -460,7 +461,7 @@ git push -u origin main
 
 | Variable | Required for MVP | Example |
 |----------|------------------|---------|
-| `NEXT_PUBLIC_APP_URL` | Recommended | `https://your-app.vercel.app` |
+| `NEXT_PUBLIC_APP_URL` | Recommended | `https://civic-ai-platform-three.vercel.app` |
 | `AI_PROCESSING_MODE` | Optional | `mock` |
 | `STORAGE_PROVIDER` | Optional | `local` |
 | `MAP_PROVIDER` | Optional | `none` |
@@ -474,6 +475,8 @@ Click **Deploy**. Vercel runs `npm install` and `npm run build` automatically.
 After the first deploy, set `NEXT_PUBLIC_APP_URL` to your production URL and redeploy so Open Graph links resolve correctly.
 
 ### 5. Verify production
+
+Live deployment: **https://civic-ai-platform-three.vercel.app**
 
 - `/` — landing page loads
 - `/dashboard` — KPIs and charts render

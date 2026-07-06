@@ -15,6 +15,7 @@ Documentation for grant reviewers, civic-tech evaluators, and contributors.
 | [src/lib/data/README.md](../src/lib/data/README.md) | Developers | Synthetic sample data policy |
 | [screenshots/README.md](screenshots/README.md) | Marketing, grants | Screenshot capture guide (9 required views) |
 | [demo-script.md](demo-script.md) | MLA, municipal, OSS reviewers | 90-second live demo script |
+| [openai-oss-application-draft.md](openai-oss-application-draft.md) | Grants, OSS programs | Application draft for API/support |
 | [issues.md](issues.md) | Maintainers, contributors | 20-issue GitHub backlog (copy-paste ready) |
 
 ## MVP vs planned (quick reference)
@@ -28,6 +29,8 @@ Documentation for grant reviewers, civic-tech evaluators, and contributors.
 | Privacy controls | UI toggles | Server-enforced blur, mask, retention |
 
 ## Key routes (local demo)
+
+**Production:** https://civic-ai-platform-three.vercel.app
 
 | URL | Page |
 |-----|------|

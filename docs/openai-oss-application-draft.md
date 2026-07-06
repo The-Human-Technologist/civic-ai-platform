@@ -219,12 +219,12 @@ I am not claiming production deployment today. I am building the **foundation** 
 | Resource | URL |
 |----------|-----|
 | **GitHub repository** | https://github.com/The-Human-Technologist/civic-ai-platform |
-| **Live demo** | `https://civic-ai-platform.vercel.app` *(deploy after push)* |
-| **Demo video (90s)** | `https://youtu.be/YOUR_DEMO_VIDEO_ID` *(record after deploy)* |
-| **Screenshots** | https://github.com/The-Human-Technologist/civic-ai-platform/tree/main/docs/screenshots |
-| **Pilot proposal (live)** | `https://civic-ai-platform.vercel.app/pilot-proposal` |
-| **Roadmap** | https://github.com/The-Human-Technologist/civic-ai-platform/blob/main/ROADMAP.md |
-| **Privacy policy** | https://github.com/The-Human-Technologist/civic-ai-platform/blob/main/PRIVACY.md |
+| **Live demo** | https://civic-ai-platform-three.vercel.app |
+| **Demo video (90s)** | `https://youtu.be/YOUR_DEMO_VIDEO_ID` *(record when ready)* |
+| **Screenshots** | https://github.com/The-Human-Technologist/civic-ai-platform/tree/master/docs/screenshots |
+| **Pilot proposal (live)** | https://civic-ai-platform-three.vercel.app/pilot-proposal |
+| **Roadmap** | https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/ROADMAP.md |
+| **Privacy policy** | https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/PRIVACY.md |
 
 ---
 
@@ -242,4 +242,4 @@ titasdatta78900@gmail.com
 
 ---
 
-*Draft for review. Replace demo video URL after recording. Deploy to Vercel for live demo links.*
+*Draft for review. Replace demo video URL when recorded.*
