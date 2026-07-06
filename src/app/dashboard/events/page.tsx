@@ -67,7 +67,7 @@ export default function EventsPage() {
   if (!hydrated) return <DashboardLoading />;
 
   return (
-    <div className="flex min-w-0 flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Events &amp; Detections</h1>
         <p className="text-sm text-muted-foreground">
@@ -188,7 +188,7 @@ export default function EventsPage() {
             ))}
           </div>
 
-          <div className="hidden rounded-lg border bg-card shadow-sm lg:block">
+          <div className="hidden rounded-lg border bg-card shadow-sm lg:block [&_[data-slot=table-container]]:overflow-x-visible">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow>

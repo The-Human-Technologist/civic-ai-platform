@@ -12,14 +12,6 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { LinkButton } from "@/components/ui/link-button";
 import {
   ALLOWED_SOURCE_SUMMARY,
@@ -41,7 +33,7 @@ const riskVariant = {
 
 export default function DataSourcesPage() {
   return (
-    <div className="flex min-w-0 max-w-5xl flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Data Sources &amp; Footage Policy</h1>
         <p className="text-sm text-muted-foreground">
@@ -121,13 +113,15 @@ export default function DataSourcesPage() {
             Metadata only — no video files in the repository. External downloads are manual.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0 pb-2">
-          <div className="flex flex-col gap-3 p-4 lg:hidden">
+        <CardContent className="p-4">
+          <div className="grid gap-3 md:grid-cols-2">
             {dataSources.map((source) => (
-              <div key={source.id} className="rounded-lg border bg-muted/20 p-4">
-                <p className="font-medium">{source.name}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{DATA_SOURCE_KIND_LABELS[source.kind]}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{source.purpose}</p>
+              <div key={source.id} className="flex min-w-0 flex-col rounded-lg border bg-muted/20 p-4">
+                <p className="font-medium leading-snug">{source.name}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {DATA_SOURCE_KIND_LABELS[source.kind]}
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{source.purpose}</p>
                 {source.url ? (
                   <a
                     href={source.url}
@@ -136,74 +130,24 @@ export default function DataSourcesPage() {
                     className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
                   >
                     Official link
-                    <ExternalLink className="size-3" />
+                    <ExternalLink className="size-3 shrink-0" />
                   </a>
                 ) : (
-                  <p className="mt-2 text-xs text-muted-foreground">{source.licenseNote}</p>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{source.licenseNote}</p>
                 )}
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Badge variant="outline" className="text-xs font-normal">
+                  <Badge variant="outline" className="max-w-full whitespace-normal text-xs font-normal">
                     {DATA_SOURCE_STATUS_LABELS[source.status]}
                   </Badge>
-                  <Badge variant={riskVariant[source.privacyRisk]} className="text-xs capitalize">
+                  <Badge
+                    variant={riskVariant[source.privacyRisk]}
+                    className="text-xs capitalize"
+                  >
                     {source.privacyRisk} risk
                   </Badge>
                 </div>
               </div>
             ))}
-          </div>
-          <div className="hidden overflow-x-auto lg:block">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Source</TableHead>
-                <TableHead className="hidden sm:table-cell">Kind</TableHead>
-                <TableHead className="hidden md:table-cell">Purpose</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden lg:table-cell">Risk</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {dataSources.map((source) => (
-                <TableRow key={source.id}>
-                  <TableCell className="min-w-[160px]">
-                    <div className="font-medium">{source.name}</div>
-                    {source.url ? (
-                      <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-0.5 inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                      >
-                        Official link
-                        <ExternalLink className="size-3" />
-                      </a>
-                    ) : (
-                      <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                        {source.licenseNote}
-                      </p>
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden text-xs sm:table-cell">
-                    {DATA_SOURCE_KIND_LABELS[source.kind]}
-                  </TableCell>
-                  <TableCell className="hidden max-w-[200px] text-xs text-muted-foreground md:table-cell">
-                    {source.purpose}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="whitespace-nowrap text-xs font-normal">
-                      {DATA_SOURCE_STATUS_LABELS[source.status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <Badge variant={riskVariant[source.privacyRisk]} className="text-xs capitalize">
-                      {source.privacyRisk}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
           </div>
         </CardContent>
       </Card>

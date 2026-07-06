@@ -20,7 +20,7 @@ export default function ReportsPage() {
   if (!hydrated) return <DashboardLoading />;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-6">
       <div className="flex flex-col gap-2 print:hidden sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Pilot Report</h1>

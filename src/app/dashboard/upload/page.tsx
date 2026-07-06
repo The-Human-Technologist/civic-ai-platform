@@ -47,7 +47,7 @@ const STAGE_LABELS: Record<ProcessingStage, string> = {
 
 function UploadPageFallback() {
   return (
-    <div className="flex max-w-4xl flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-6">
       <div className="h-8 w-64 animate-pulse rounded bg-muted" />
       <div className="h-24 animate-pulse rounded-xl bg-muted" />
     </div>
@@ -158,7 +158,7 @@ function UploadPageContent() {
   const showProgressPanel = stage !== "idle" || lastResult !== null;
 
   return (
-    <div className="flex max-w-4xl flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Video Upload &amp; Demo Feeds</h1>
