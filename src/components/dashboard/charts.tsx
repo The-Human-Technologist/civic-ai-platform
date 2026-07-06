@@ -6,6 +6,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  LabelList,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -16,6 +17,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DetectionEvent } from "@/types";
 import { EVENT_TYPE_LABELS } from "@/lib/constants";
+
+const CHART_LABEL_STYLE = { fill: "#ffffff", fontSize: 12, fontWeight: 600 } as const;
 
 const CHART_COLORS = [
   "hsl(220 70% 45%)",
@@ -68,18 +71,19 @@ export function EventsByTypeChart({ events }: { events: DetectionEvent[] }) {
       <CardContent className="h-72 min-w-0">
         <ChartMount className="h-full w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ left: 4, right: 8 }}>
+            <BarChart data={data} layout="vertical" margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" allowDecimals={false} />
               <YAxis
                 type="category"
                 dataKey="name"
-                width={100}
-                tick={{ fontSize: 10 }}
+                width={108}
+                tick={{ fontSize: 11 }}
                 tickFormatter={(v: string) => (v.length > 18 ? `${v.slice(0, 16)}…` : v)}
               />
             <Tooltip />
             <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+              <LabelList dataKey="count" position="insideRight" offset={8} style={CHART_LABEL_STYLE} />
               {data.map((_, i) => (
                 <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
               ))}
@@ -116,8 +120,8 @@ export function ReviewStatusChart({
         <CardTitle className="text-base">Human review outcomes</CardTitle>
         <CardDescription>Municipal &amp; traffic authority disposition</CardDescription>
       </CardHeader>
-      <CardContent className="h-72 min-w-0">
-        <ChartMount className="h-full w-full">
+      <CardContent className="min-w-0">
+        <ChartMount className="h-56 w-full">
           <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -126,8 +130,8 @@ export function ReviewStatusChart({
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={55}
-              outerRadius={90}
+              innerRadius={50}
+              outerRadius={78}
               paddingAngle={3}
             >
               {data.map((_, i) => (
@@ -138,6 +142,18 @@ export function ReviewStatusChart({
           </PieChart>
         </ResponsiveContainer>
         </ChartMount>
+        <ul className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-2">
+          {data.map((item, i) => (
+            <li key={item.name} className="flex items-center gap-2 text-sm">
+              <span
+                className="size-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+              />
+              <span className="text-muted-foreground">{item.name}</span>
+              <span className="font-semibold tabular-nums">{item.value}</span>
+            </li>
+          ))}
+        </ul>
       </CardContent>
     </Card>
   );
@@ -165,12 +181,14 @@ export function WeeklyTrendChart({ events }: { events: DetectionEvent[] }) {
       <CardContent className="h-64 min-w-0">
         <ChartMount className="h-full w-full">
           <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={counts}>
+          <BarChart data={counts} margin={{ top: 20, right: 8, left: 0, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="day" />
-            <YAxis allowDecimals={false} />
+            <XAxis dataKey="day" tick={{ fontSize: 12 }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
             <Tooltip />
-            <Bar dataKey="events" fill="hsl(220 70% 45%)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="events" fill="hsl(220 70% 45%)" radius={[4, 4, 0, 0]}>
+              <LabelList dataKey="events" position="insideTop" offset={6} style={CHART_LABEL_STYLE} />
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
         </ChartMount>

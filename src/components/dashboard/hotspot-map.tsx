@@ -35,7 +35,8 @@ export function HotspotMap({ hotspots }: { hotspots: Hotspot[] }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <div className="mx-auto w-full max-w-3xl">
+        <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl border bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
           <div className="absolute inset-0 opacity-30">
             <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -69,6 +70,7 @@ export function HotspotMap({ hotspots }: { hotspots: Hotspot[] }) {
               </div>
             );
           })}
+        </div>
         </div>
         <div className="mt-4 flex flex-col gap-3">
           {hotspots.map((hs) => (
