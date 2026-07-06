@@ -3,7 +3,31 @@ import { LinkButton } from "@/components/ui/link-button";
 import { PLATFORM_NAME } from "@/lib/constants";
 import { Shield } from "lucide-react";
 
-export function LandingNav() {
+const HOME_NAV = [
+  { href: "#problem", label: "Challenge" },
+  { href: "#solution", label: "Solution" },
+  { href: "#modules", label: "Capabilities" },
+  { href: "#privacy", label: "Privacy" },
+] as const;
+
+const PROPOSAL_NAV = [
+  { href: "#objective", label: "Objective" },
+  { href: "#scope", label: "Scope" },
+  { href: "#challenges", label: "Challenges" },
+  { href: "#timeline", label: "Timeline" },
+  { href: "#privacy", label: "Privacy" },
+  { href: "#security", label: "Security" },
+  { href: "#outcomes", label: "Outcomes" },
+  { href: "#success-metrics", label: "Metrics" },
+] as const;
+
+type LandingNavProps = {
+  variant?: "home" | "proposal";
+};
+
+export function LandingNav({ variant = "home" }: LandingNavProps) {
+  const sectionLinks = variant === "proposal" ? PROPOSAL_NAV : HOME_NAV;
+
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
@@ -16,12 +40,17 @@ export function LandingNav() {
             <p className="text-xs text-muted-foreground">Civic Intelligence · Human Review</p>
           </div>
         </Link>
-        <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-          <a href="#problem" className="hover:text-foreground">Challenge</a>
-          <a href="#solution" className="hover:text-foreground">Solution</a>
-          <a href="#modules" className="hover:text-foreground">Capabilities</a>
-          <a href="#privacy" className="hover:text-foreground">Privacy</a>
-          <Link href="/pilot-proposal" className="hover:text-foreground">Pilot Proposal</Link>
+        <nav className="hidden items-center gap-5 text-sm text-muted-foreground lg:flex">
+          {sectionLinks.map(({ href, label }) => (
+            <a key={href} href={href} className="hover:text-foreground">
+              {label}
+            </a>
+          ))}
+          {variant === "home" ? (
+            <Link href="/pilot-proposal" className="hover:text-foreground">
+              Pilot Proposal
+            </Link>
+          ) : null}
         </nav>
         <div className="flex items-center gap-2">
           <LinkButton variant="ghost" size="sm" href="/pilot-proposal">

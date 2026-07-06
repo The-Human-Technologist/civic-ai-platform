@@ -189,37 +189,51 @@ export default function EventsPage() {
           </div>
 
           <div className="hidden rounded-lg border bg-card shadow-sm lg:block">
-        <div className="overflow-x-auto">
-          <Table>
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead>Event ID</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Date / Time</TableHead>
-                <TableHead>Confidence</TableHead>
-                <TableHead>Severity</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+                <TableHead className="w-[96px]">Event ID</TableHead>
+                <TableHead className="w-[13%]">Type</TableHead>
+                <TableHead className="w-[26%]">Location</TableHead>
+                <TableHead className="w-[148px]">Date / Time</TableHead>
+                <TableHead className="hidden w-[72px] xl:table-cell">Confidence</TableHead>
+                <TableHead className="w-[88px]">Severity</TableHead>
+                <TableHead className="w-[100px]">Status</TableHead>
+                <TableHead className="w-[88px] text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell className="font-mono text-xs">{e.id}</TableCell>
-                  <TableCell className="text-sm">{EVENT_TYPE_LABELS[e.type as EventType]}</TableCell>
-                  <TableCell className="max-w-[200px] text-sm">{e.location.name}</TableCell>
-                  <TableCell className="whitespace-nowrap text-xs">{formatDateTime(e.timestamp)}</TableCell>
-                  <TableCell>{formatConfidence(e.confidence)}</TableCell>
-                  <TableCell>
+                  <TableCell className="min-w-0 whitespace-normal text-sm">
+                    <span className="line-clamp-2 break-words">
+                      {EVENT_TYPE_LABELS[e.type as EventType]}
+                    </span>
+                  </TableCell>
+                  <TableCell className="min-w-0 whitespace-normal align-top">
+                    <p
+                      className="line-clamp-2 break-words text-sm leading-snug"
+                      title={e.location.name}
+                    >
+                      {e.location.name}
+                    </p>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-xs tabular-nums">
+                    {formatDateTime(e.timestamp)}
+                  </TableCell>
+                  <TableCell className="hidden whitespace-nowrap xl:table-cell">
+                    {formatConfidence(e.confidence)}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
                     <Badge variant={severityVariant[e.severity]}>{SEVERITY_LABELS[e.severity]}</Badge>
                   </TableCell>
-                  <TableCell>
-                    <span className={cn("text-xs", e.status === "pending" && "font-medium text-amber-600")}>
+                  <TableCell className="min-w-0 whitespace-normal">
+                    <span className={cn("text-xs leading-snug", e.status === "pending" && "font-medium text-amber-600")}>
                       {STATUS_LABELS[e.status]}
                     </span>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="whitespace-nowrap text-right">
                     <LinkButton
                       size="sm"
                       variant="outline"
@@ -232,7 +246,6 @@ export default function EventsPage() {
               ))}
             </TableBody>
           </Table>
-        </div>
           </div>
         </>
       )}

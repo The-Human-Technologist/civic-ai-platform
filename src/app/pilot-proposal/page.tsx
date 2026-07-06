@@ -28,7 +28,7 @@ export const metadata = {
 export default function PilotProposalPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <LandingNav />
+      <LandingNav variant="proposal" />
 
       <div className="border-b bg-gradient-to-r from-primary/10 via-background to-primary/5">
         <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
@@ -62,7 +62,7 @@ export default function PilotProposalPage() {
           <MvpDisclaimers />
         </div>
 
-        <section className="mb-12">
+        <section id="objective" className="mb-12 scroll-mt-24">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <Target className="size-5 text-primary" />
             Objective
@@ -72,7 +72,7 @@ export default function PilotProposalPage() {
           </p>
         </section>
 
-        <section className="mb-12">
+        <section id="scope" className="mb-12 scroll-mt-24">
           <h2 className="text-xl font-semibold">Scope of work</h2>
           <ul className="mt-4 flex flex-col gap-2">
             {PILOT_PROPOSAL.scope.map((item) => (
@@ -84,7 +84,7 @@ export default function PilotProposalPage() {
           </ul>
         </section>
 
-        <section className="mb-12">
+        <section id="pilot-site" className="mb-12 scroll-mt-24">
           <h2 className="text-xl font-semibold">One-road / one-junction pilot site</h2>
           <Card className="mt-4">
             <CardHeader>
@@ -109,7 +109,7 @@ export default function PilotProposalPage() {
           </Card>
         </section>
 
-        <section className="mb-12">
+        <section id="footage" className="mb-12 scroll-mt-24">
           <h2 className="text-xl font-semibold">Existing CCTV &amp; video footage</h2>
           <ul className="mt-4 flex flex-col gap-2">
             {PILOT_PROPOSAL.footageUsage.map((item) => (
@@ -121,7 +121,7 @@ export default function PilotProposalPage() {
           </ul>
         </section>
 
-        <section className="mb-12">
+        <section id="challenges" className="mb-12 scroll-mt-24">
           <h2 className="text-xl font-semibold">Human-reviewed detections</h2>
           <ul className="mt-4 flex flex-col gap-2">
             {PILOT_PROPOSAL.humanReview.map((item) => (
@@ -133,14 +133,14 @@ export default function PilotProposalPage() {
           </ul>
         </section>
 
-        <section className="mb-12 rounded-lg border border-destructive/30 bg-destructive/5 p-6">
+        <section id="no-auto-fines" className="mb-12 scroll-mt-24 rounded-lg border border-destructive/30 bg-destructive/5 p-6">
           <h2 className="text-xl font-semibold">No automatic fines or challans</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             {PILOT_PROPOSAL.noAutoFines}
           </p>
         </section>
 
-        <section className="mb-12">
+        <section id="outcomes" className="mb-12 scroll-mt-24">
           <h2 className="text-xl font-semibold">Expected outcomes</h2>
           <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
             {PILOT_PROPOSAL.expectedOutcomes.map((item) => (
@@ -149,7 +149,7 @@ export default function PilotProposalPage() {
           </ol>
         </section>
 
-        <section className="mb-12">
+        <section id="privacy" className="mb-12 scroll-mt-24">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <Shield className="size-5 text-primary" />
             Privacy safeguards
@@ -164,7 +164,7 @@ export default function PilotProposalPage() {
           </ul>
         </section>
 
-        <section className="mb-12">
+        <section id="security" className="mb-12 scroll-mt-24">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <Users className="size-5 text-primary" />
             Departments involved
@@ -187,7 +187,7 @@ export default function PilotProposalPage() {
           </div>
         </section>
 
-        <section className="mb-12">
+        <section id="timeline" className="mb-12 scroll-mt-24">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <Calendar className="size-5 text-primary" />
             30-day timeline
@@ -209,7 +209,7 @@ export default function PilotProposalPage() {
           </div>
         </section>
 
-        <section className="mb-12">
+        <section id="success-metrics" className="mb-12 scroll-mt-24">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <Landmark className="size-5 text-primary" />
             Success metrics
