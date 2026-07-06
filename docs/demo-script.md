@@ -1,9 +1,11 @@
 # 90-second demo video script
 
-**AI Civic Operations & Road Safety Intelligence Platform**  
-**Live URL:** https://civic-ai-platform-three.vercel.app  
+**AI Civic Operations & Road Safety Intelligence Platform**
+**Live URL:** https://civic-ai-platform-three.vercel.app
 **Duration target:** ~90 seconds (hard cap: 2 minutes)  
-**Status:** Script ready — **video not recorded yet**
+**Status:** Recorded — https://youtu.be/ZfeK3IWnl9k
+
+**Recorded demo:** https://youtu.be/ZfeK3IWnl9k
 
 ---
 
@@ -13,7 +15,7 @@
 - Do **not** show bookmarks bar, browser tabs, address bar overlays, personal apps, or private notifications.
 - Use the **live demo** above (or `npm run dev` locally if Vercel is down).
 - Reset demo data if needed: **Dashboard → Privacy → Reset demo events**.
-- Upload finished video as **YouTube unlisted** — add the real link to `docs/openai-oss-application-draft.md` only after recording.
+- Upload finished video as **YouTube unlisted** — link is in [openai-oss-application-draft.md](openai-oss-application-draft.md) and [README](../README.md).
 
 **Honest framing:** Mock AI only · no real CCTV bundled · no facial recognition · no automatic challan · human-reviewed alerts only.
 
@@ -140,9 +142,9 @@
 
 ## After recording
 
-1. Upload to **YouTube (unlisted)**.
-2. Paste the real URL into `docs/openai-oss-application-draft.md` (replace `YOUR_DEMO_VIDEO_ID` placeholder).
-3. Check off the item in [openai-submission-checklist.md](openai-submission-checklist.md).
+1. ~~Upload to **YouTube (unlisted)**.~~ Done: https://youtu.be/ZfeK3IWnl9k
+2. ~~Paste the real URL into `docs/openai-oss-application-draft.md`.~~ Done.
+3. ~~Check off the item in [openai-submission-checklist.md](openai-submission-checklist.md).~~ Done.
 
 ---
 

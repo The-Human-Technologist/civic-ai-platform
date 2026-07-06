@@ -267,7 +267,7 @@ Website-only captures at 1440×900 (Playwright viewport — no browser chrome). 
 ### Privacy Settings
 ![Privacy Settings](docs/screenshots/privacy.png)
 
-**Live demo:** https://civic-ai-platform-three.vercel.app · **Capture guide:** [docs/screenshots/README.md](docs/screenshots/README.md) · **Walkthrough:** [docs/demo-script.md](docs/demo-script.md)
+**Live demo:** https://civic-ai-platform-three.vercel.app · **Demo video:** https://youtu.be/ZfeK3IWnl9k · **Capture guide:** [docs/screenshots/README.md](docs/screenshots/README.md) · **Walkthrough script:** [docs/demo-script.md](docs/demo-script.md)
 
 ---
 

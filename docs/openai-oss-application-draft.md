@@ -1,10 +1,10 @@
 # OpenAI Open Source / Codex Support — Application Draft
 
-**Applicant:** Titas Datta  
-**Organization:** [The Human Technologist](https://github.com/The-Human-Technologist)  
-**Email:** titasdatta78900@gmail.com  
-**Project:** AI Civic Operations & Road Safety Intelligence Platform  
-**License:** AGPL-3.0-or-later  
+**Applicant:** Titas Datta
+**Organization:** [The Human Technologist](https://github.com/The-Human-Technologist)
+**Email:** titasdatta78900@gmail.com
+**Project:** AI Civic Operations & Road Safety Intelligence Platform
+**License:** AGPL-3.0-or-later
 **Status:** Public alpha (v0.1) — working demo UI, mock AI only, live on Vercel
 
 ---
@@ -96,9 +96,9 @@ We publish explicit **non-goals** in the repository: no automatic challans, no f
 - Face blur and plate masking on ingest
 - Immutable server audit logs
 
-**Stack:** Next.js 16, TypeScript, Tailwind 4, shadcn/ui, Recharts.  
-**Live demo:** https://civic-ai-platform-three.vercel.app  
-**Repository:** https://github.com/The-Human-Technologist/civic-ai-platform (default branch: `master`)  
+**Stack:** Next.js 16, TypeScript, Tailwind 4, shadcn/ui, Recharts.
+**Live demo:** https://civic-ai-platform-three.vercel.app
+**Repository:** https://github.com/The-Human-Technologist/civic-ai-platform (default branch: `master`)
 **CI:** GitHub Actions — typecheck, lint, build on every push (passing).
 
 **Footage policy:** The project intentionally does **not** bundle or scrape real CCTV footage. Phase 2 will use licensed public datasets and/or authorized pilot footage. [DATA_SOURCES.md](https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/DATA_SOURCES.md) defines allowed sources, prohibited sources, and contributor privacy rules. The MVP uses **mock AI only** — no real CCTV bundled, no facial recognition, no automatic challan; human-reviewed alerts only.
@@ -221,7 +221,7 @@ I am not claiming production deployment today. I am building the **foundation** 
 - [x] GitHub Actions CI (typecheck · lint · build)
 - [x] Codespaces / devcontainer for contributors
 - [x] Capture 9 screenshots for `docs/screenshots/` ([capture script](../scripts/capture-screenshots.mjs))
-- [ ] Record 90-second walkthrough video for reviewers ([demo script](demo-script.md))
+- [x] Record walkthrough video for reviewers: https://youtu.be/ZfeK3IWnl9k ([demo script](demo-script.md))
 - [x] File structured GitHub issues for Phase 2+ ([docs/issues.md](issues.md) · [Issues #1–#12](https://github.com/The-Human-Technologist/civic-ai-platform/issues))
 
 **Month 2 — Real inference foundation (Phase 2 start)**
@@ -250,7 +250,7 @@ I am not claiming production deployment today. I am building the **foundation** 
 |----------|-----|
 | **GitHub repository** | https://github.com/The-Human-Technologist/civic-ai-platform |
 | **Live demo** | https://civic-ai-platform-three.vercel.app |
-| **Demo video (90s)** | *Pending* — `https://youtu.be/YOUR_DEMO_VIDEO_ID` after recording ([demo script](demo-script.md)) |
+| **Demo video (90s)** | https://youtu.be/ZfeK3IWnl9k ([demo script](demo-script.md)) |
 | **Submission checklist** | [openai-submission-checklist.md](openai-submission-checklist.md) |
 | **GitHub issues (Phase 2–5)** | https://github.com/The-Human-Technologist/civic-ai-platform/issues |
 | **Screenshots** | [docs/screenshots/](screenshots/) — 9 website-only PNGs (landing, dashboard, upload demo, demo footage, data sources, events, review, proposal, privacy) |
@@ -279,4 +279,4 @@ titasdatta78900@gmail.com
 
 ---
 
-*Public alpha draft — Jul 2026. Record demo video before final OSS program submission; screenshots are in `docs/screenshots/`.*
+*Public alpha draft — Jul 2026. Demo video and screenshots are in the repository; mock AI only in v0.1.*
