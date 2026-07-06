@@ -16,6 +16,7 @@ Documentation for grant reviewers, civic-tech evaluators, and contributors.
 | [screenshots/README.md](screenshots/README.md) | Marketing, grants | Screenshot capture guide (9 required views) |
 | [demo-script.md](demo-script.md) | MLA, municipal, OSS reviewers | 90-second live demo script |
 | [openai-oss-application-draft.md](openai-oss-application-draft.md) | Grants, OSS programs | Application draft for API/support |
+| [social-launch-post.md](social-launch-post.md) | Social, launch | LinkedIn, X, star request copy |
 | [issues.md](issues.md) | Maintainers, contributors | 20-issue GitHub backlog (copy-paste ready) |
 
 ## MVP vs planned (quick reference)

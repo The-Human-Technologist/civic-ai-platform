@@ -1,5 +1,8 @@
 # Screenshot capture guide
 
+> **Public alpha:** PNG files are not in git yet. See [PLACEHOLDER.md](PLACEHOLDER.md) for the pending checklist.  
+> **Capture from:** https://civic-ai-platform-three.vercel.app or `npm run dev` locally.
+
 Public presentation materials for GitHub, grant applications, civic-tech reviews, and open-source program submissions.
 
 ## Before you start

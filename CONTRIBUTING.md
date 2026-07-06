@@ -13,7 +13,7 @@ New to open source? This repo is built for you.
 ### Fastest path: GitHub Codespaces
 
 1. Fork [The-Human-Technologist/civic-ai-platform](https://github.com/The-Human-Technologist/civic-ai-platform)
-2. On your fork: **Code → Codespaces → Create codespace on main**
+2. On your fork: **Code → Codespaces → Create codespace on master**
 3. Terminal: `npm run dev` → open port **3000**
 4. Pick a **Beginner** task from [docs/good-first-issues.md](docs/good-first-issues.md)
 5. Before pushing:

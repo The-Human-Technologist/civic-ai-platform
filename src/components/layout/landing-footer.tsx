@@ -22,18 +22,19 @@ export function LandingFooter() {
             <span className="font-medium text-foreground">Product</span>
             <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
             <Link href="/pilot-proposal" className="hover:text-foreground">Pilot Proposal</Link>
-            <Link href="/dashboard/upload" className="hover:text-foreground">Video Demo</Link>
+            <Link href="/dashboard/upload" className="hover:text-foreground">Upload demo</Link>
+            <a href="https://civic-ai-platform-three.vercel.app" className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Live demo</a>
           </div>
           <div className="flex flex-col gap-2">
             <span className="font-medium text-foreground">Open source</span>
-            <a href={`${GITHUB_REPO}/blob/main/README.md`} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">README</a>
-            <a href={`${GITHUB_REPO}/blob/main/PRIVACY.md`} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Privacy</a>
-            <a href={`${GITHUB_REPO}/blob/main/ROADMAP.md`} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Roadmap</a>
+            <a href={GITHUB_REPO} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">GitHub</a>
+            <a href={`${GITHUB_REPO}/blob/master/PRIVACY.md`} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Privacy</a>
+            <a href={`${GITHUB_REPO}/blob/master/ROADMAP.md`} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Roadmap</a>
           </div>
           <div className="flex flex-col gap-2">
             <span className="font-medium text-foreground">Contribute</span>
-            <a href={`${GITHUB_REPO}/blob/main/CONTRIBUTING.md`} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Contributing</a>
-            <a href={`${GITHUB_REPO}/blob/main/SECURITY.md`} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Security</a>
+            <a href={`${GITHUB_REPO}/blob/master/CONTRIBUTING.md`} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Contributing</a>
+            <a href={`${GITHUB_REPO}/blob/master/SECURITY.md`} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Security</a>
             <a href={`${GITHUB_REPO}/issues`} className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Issues</a>
           </div>
         </div>

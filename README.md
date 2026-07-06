@@ -7,6 +7,8 @@
 [![Status](https://img.shields.io/badge/Status-MVP_demo-orange)](ROADMAP.md)
 [![Privacy](https://img.shields.io/badge/Privacy-first-2ea44f)](#privacy-first-design)
 [![CI](https://github.com/The-Human-Technologist/civic-ai-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/The-Human-Technologist/civic-ai-platform/actions/workflows/ci.yml)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-open-22c55e?style=for-the-badge&logo=vercel&logoColor=white)](https://civic-ai-platform-three.vercel.app)
+[![GitHub](https://img.shields.io/badge/GitHub-repo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/The-Human-Technologist/civic-ai-platform)
 
 **Maintained by [The Human Technologist](https://github.com/The-Human-Technologist)** · Open-source civic intelligence for municipalities, traffic departments, and civic authorities.
 
@@ -20,13 +22,24 @@ Turn **existing CCTV and uploaded video** into **human-reviewed** civic and road
 
 > **Honest scope:** This repository ships a **working demo dashboard** with **synthetic AI detections**. It is suitable for pilots, grants, and contributor onboarding — not for production deployment without completing [ROADMAP.md](ROADMAP.md) Phases 2–5 and local legal review. See [PRIVACY.md](PRIVACY.md) · [SECURITY.md](SECURITY.md).
 
-**Quick start:** `npm install && npm run dev` → [http://localhost:3000](http://localhost:3000)  
-**Live demo:** [https://civic-ai-platform-three.vercel.app](https://civic-ai-platform-three.vercel.app) · [GitHub](https://github.com/The-Human-Technologist/civic-ai-platform)
+## Public alpha status
+
+| | |
+|---|---|
+| **What works today** | Full demo UI — landing, dashboard, human review, reports, pilot proposal |
+| **AI inference** | **Mock only** (`processVideoMock`) — synthetic detections, not real computer vision |
+| **CCTV / video** | Upload UX + demo feed cards — **no real CCTV or RTSP processing yet** |
+| **Data** | Browser `localStorage` with 35 fake Barasat events — no production database |
+| **Next milestone** | **Phase 2** — YOLO/OpenCV worker, PostgreSQL, real inference API |
+| **Contributors wanted** | CV engineers, civic-tech devs, i18n, accessibility — see [good first issues](docs/good-first-issues.md) |
+
+**Quick start:** `npm install && npm run dev` → [http://localhost:3000](http://localhost:3000)
 
 ---
 
 ## Table of contents
 
+- [Public alpha status](#public-alpha-status)
 - [Project mission](#project-mission)
 - [Why this matters](#why-this-matters)
 - [Who can use it](#who-can-use-it)
@@ -206,7 +219,7 @@ Full policy: [PRIVACY.md](PRIVACY.md) · Contributor rules: [CONTRIBUTING.md](CO
 
 ### Designed for 30-day municipal pilots
 
-The included [**Pilot Proposal**](/pilot-proposal) page (`/pilot-proposal`) describes a realistic evaluation pattern:
+The included [**Pilot Proposal**](https://civic-ai-platform-three.vercel.app/pilot-proposal) page describes a realistic evaluation pattern:
 
 | Pilot element | What we demonstrate |
 |---------------|---------------------|
@@ -223,30 +236,23 @@ This lets a municipality, traffic unit, or WEBEL team **evaluate software workfl
 
 ## Screenshots
 
-> Add PNG files before grant applications or public launch.
-> **Full capture guide:** [docs/screenshots/README.md](docs/screenshots/README.md) · **Live demo script:** [docs/demo-script.md](docs/demo-script.md)
+> **Before grant or OpenAI OSS application submission:** capture and commit all 9 PNGs listed below.  
+> Screenshots are **not included yet** — follow [docs/screenshots/README.md](docs/screenshots/README.md) (≈30 min on the live demo).  
+> Until then, reviewers should use the **[live demo](https://civic-ai-platform-three.vercel.app)** or run locally.
 
-| Page | Path |
-|------|------|
-| Landing | [`docs/screenshots/landing.png`](docs/screenshots/landing.png) |
-| Dashboard | [`docs/screenshots/dashboard.png`](docs/screenshots/dashboard.png) |
-| Video upload / demo | [`docs/screenshots/video-upload-demo.png`](docs/screenshots/video-upload-demo.png) |
-| Events table | [`docs/screenshots/events-table.png`](docs/screenshots/events-table.png) |
-| Event review | [`docs/screenshots/event-review.png`](docs/screenshots/event-review.png) |
-| Hotspot map | [`docs/screenshots/hotspot-map.png`](docs/screenshots/hotspot-map.png) |
-| Report | [`docs/screenshots/report.png`](docs/screenshots/report.png) |
-| Privacy settings | [`docs/screenshots/privacy.png`](docs/screenshots/privacy.png) |
-| Pilot proposal | [`docs/screenshots/pilot-proposal.png`](docs/screenshots/pilot-proposal.png) |
+| # | Page | File (pending) | Capture guide |
+|---|------|----------------|---------------|
+| 1 | Landing | `landing.png` | [§1](docs/screenshots/README.md#1-landing-page) |
+| 2 | Dashboard | `dashboard.png` | [§2](docs/screenshots/README.md#2-dashboard-overview) |
+| 3 | Video upload | `video-upload-demo.png` | [§3](docs/screenshots/README.md#3-video-upload--demo-processing) |
+| 4 | Events table | `events-table.png` | [§4](docs/screenshots/README.md#4-events-table) |
+| 5 | Event review | `event-review.png` | [§5](docs/screenshots/README.md#5-event-review-page) |
+| 6 | Hotspot map | `hotspot-map.png` | [§6](docs/screenshots/README.md#6-hotspot--map-page) |
+| 7 | Report | `report.png` | [§7](docs/screenshots/README.md#7-reports-page) |
+| 8 | Privacy | `privacy.png` | [§8](docs/screenshots/README.md#8-privacy--settings-page) |
+| 9 | Pilot proposal | `pilot-proposal.png` | [§9](docs/screenshots/README.md#9-pilot-proposal-page) |
 
-<!--
-When images exist, uncomment:
-
-<p align="center">
-  <img src="docs/screenshots/landing.png" alt="Landing page" width="720" />
-</p>
--->
-
-See [docs/screenshots/README.md](docs/screenshots/README.md) for capture guidelines.
+**Live demo script:** [docs/demo-script.md](docs/demo-script.md)
 
 ---
 
@@ -333,7 +339,7 @@ Best option for students and contributors who do not want to install Node locall
 ### Option A — One click from GitHub
 
 1. Open [github.com/The-Human-Technologist/civic-ai-platform](https://github.com/The-Human-Technologist/civic-ai-platform)
-2. Click **Code** → **Codespaces** → **Create codespace on main**
+2. Click **Code** → **Codespaces** → **Create codespace on master**
 3. Wait for the container to build (`npm install` runs automatically)
 4. In the terminal:
 
@@ -446,7 +452,7 @@ git init   # if not already a repo
 git add .
 git commit -m "Initial civic AI platform MVP"
 git remote add origin https://github.com/The-Human-Technologist/civic-ai-platform.git
-git push -u origin main
+git push -u origin master
 ```
 
 ### 2. Import in Vercel

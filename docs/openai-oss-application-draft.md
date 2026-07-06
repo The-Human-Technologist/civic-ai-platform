@@ -1,11 +1,11 @@
 # OpenAI Open Source / Codex Support — Application Draft
 
-**Applicant:** Titas Datta
-**Organization:** The Human Technologist
-**Email:** titasdatta78900@gmail.com
-**Project:** AI Civic Operations & Road Safety Intelligence Platform
-**License:** AGPL-3.0-or-later
-**Status:** MVP demo (v0.1) — mock AI, production workflow UX
+**Applicant:** Titas Datta  
+**Organization:** [The Human Technologist](https://github.com/The-Human-Technologist)  
+**Email:** titasdatta78900@gmail.com  
+**Project:** AI Civic Operations & Road Safety Intelligence Platform  
+**License:** AGPL-3.0-or-later  
+**Status:** Public alpha (v0.1) — working demo UI, mock AI only, live on Vercel
 
 ---
 
@@ -96,7 +96,10 @@ We publish explicit **non-goals** in the repository: no automatic challans, no f
 - Face blur and plate masking on ingest
 - Immutable server audit logs
 
-**Stack:** Next.js 16, TypeScript, Tailwind 4, shadcn/ui, Recharts. Deployable to Vercel with no secrets for the demo.
+**Stack:** Next.js 16, TypeScript, Tailwind 4, shadcn/ui, Recharts.  
+**Live demo:** https://civic-ai-platform-three.vercel.app  
+**Repository:** https://github.com/The-Human-Technologist/civic-ai-platform (default branch: `master`)  
+**CI:** GitHub Actions — typecheck, lint, build on every push (passing).
 
 ---
 
@@ -187,12 +190,15 @@ I am not claiming production deployment today. I am building the **foundation** 
 
 ## 11. What I plan to build in the next 3 months
 
-**Month 1 — Open release & pilot materials**
+**Month 1 — Open release & pilot materials** *(in progress — Jul 2026)*
 
-- Publish repository publicly with screenshots and demo script
-- Deploy live demo on Vercel
-- Record 90-second walkthrough video for reviewers
-- File structured GitHub issues for Phase 2 (from `docs/issues.md`)
+- [x] Publish repository publicly on GitHub (`The-Human-Technologist/civic-ai-platform`)
+- [x] Deploy live demo on Vercel (https://civic-ai-platform-three.vercel.app)
+- [x] GitHub Actions CI (typecheck · lint · build)
+- [x] Codespaces / devcontainer for contributors
+- [ ] Capture 9 screenshots for `docs/screenshots/` (see capture guide)
+- [ ] Record 90-second walkthrough video for reviewers
+- [ ] File structured GitHub issues for Phase 2 (from `docs/issues.md`)
 
 **Month 2 — Real inference foundation (Phase 2 start)**
 
@@ -220,11 +226,13 @@ I am not claiming production deployment today. I am building the **foundation** 
 |----------|-----|
 | **GitHub repository** | https://github.com/The-Human-Technologist/civic-ai-platform |
 | **Live demo** | https://civic-ai-platform-three.vercel.app |
-| **Demo video (90s)** | `https://youtu.be/YOUR_DEMO_VIDEO_ID` *(record when ready)* |
-| **Screenshots** | https://github.com/The-Human-Technologist/civic-ai-platform/tree/master/docs/screenshots |
+| **Demo video (90s)** | *Pending* — `https://youtu.be/YOUR_DEMO_VIDEO_ID` after recording ([demo script](demo-script.md)) |
+| **Screenshots** | Pending — [capture guide](screenshots/README.md) · [checklist](screenshots/PLACEHOLDER.md) |
 | **Pilot proposal (live)** | https://civic-ai-platform-three.vercel.app/pilot-proposal |
+| **Architecture** | https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/docs/architecture.md |
 | **Roadmap** | https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/ROADMAP.md |
 | **Privacy policy** | https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/PRIVACY.md |
+| **Contributing** | https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/CONTRIBUTING.md |
 
 ---
 
@@ -232,7 +240,7 @@ I am not claiming production deployment today. I am building the **foundation** 
 
 This project asks a narrow, important question: **Can municipalities use existing video responsibly — with human review and privacy-first AI — to run better civic and road safety operations?**
 
-The MVP answers the workflow and governance half honestly. The next phase needs engineering depth for real inference, persistence, and pilot evaluation. OpenAI support would help a solo open-source maintainer close that gap faster — in public, under AGPL, with clear safety boundaries.
+The MVP answers the workflow and governance half honestly — **live and inspectable today**. The next phase needs engineering depth for real inference, persistence, and pilot evaluation. OpenAI support would help a solo open-source maintainer close that gap faster — in public, under AGPL, with clear safety boundaries.
 
 I am committed to honest scope, documented non-goals, and software that serves municipalities and citizens — not automated punishment.
 
@@ -242,4 +250,4 @@ titasdatta78900@gmail.com
 
 ---
 
-*Draft for review. Replace demo video URL when recorded.*
+*Public alpha draft — Jul 2026. Record demo video and add screenshots before final OSS program submission.*
