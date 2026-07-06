@@ -238,23 +238,36 @@ This lets a municipality, traffic unit, or WEBEL team **evaluate software workfl
 
 ## Screenshots
 
-> **Before grant or OpenAI OSS application submission:** capture and commit all 9 PNGs listed below.
-> Screenshots are **not included yet** — follow [docs/screenshots/README.md](docs/screenshots/README.md) (≈30 min on the live demo).
-> Until then, reviewers should use the **[live demo](https://civic-ai-platform-three.vercel.app)** or run locally.
+Website-only captures at 1440×900 (Playwright viewport — no browser chrome). Regenerate: `npm run capture:screenshots`.
 
-| # | Page | File (pending) | Capture guide |
-|---|------|----------------|---------------|
-| 1 | Landing | `landing.png` | [§1](docs/screenshots/README.md#1-landing-page) |
-| 2 | Dashboard | `dashboard.png` | [§2](docs/screenshots/README.md#2-dashboard-overview) |
-| 3 | Video upload | `video-upload-demo.png` | [§3](docs/screenshots/README.md#3-video-upload--demo-processing) |
-| 4 | Events table | `events-table.png` | [§4](docs/screenshots/README.md#4-events-table) |
-| 5 | Event review | `event-review.png` | [§5](docs/screenshots/README.md#5-event-review-page) |
-| 6 | Hotspot map | `hotspot-map.png` | [§6](docs/screenshots/README.md#6-hotspot--map-page) |
-| 7 | Report | `report.png` | [§7](docs/screenshots/README.md#7-reports-page) |
-| 8 | Privacy | `privacy.png` | [§8](docs/screenshots/README.md#8-privacy--settings-page) |
-| 9 | Pilot proposal | `pilot-proposal.png` | [§9](docs/screenshots/README.md#9-pilot-proposal-page) |
+### Landing page
+![Landing page](docs/screenshots/landing.png)
 
-**Live demo script:** [docs/demo-script.md](docs/demo-script.md)
+### Dashboard overview
+![Dashboard overview](docs/screenshots/dashboard.png)
+
+### Mock upload demo
+![Mock upload demo](docs/screenshots/upload-demo.png)
+
+### Demo Footage Library
+![Demo Footage Library](docs/screenshots/demo-footage.png)
+
+### Data Sources Policy
+![Data Sources Policy](docs/screenshots/data-sources.png)
+
+### Detections / Events
+![Detections and Events](docs/screenshots/events.png)
+
+### Human Review
+![Human Review](docs/screenshots/event-review.png)
+
+### Pilot Proposal
+![Pilot Proposal](docs/screenshots/pilot-proposal.png)
+
+### Privacy Settings
+![Privacy Settings](docs/screenshots/privacy.png)
+
+**Live demo:** https://civic-ai-platform-three.vercel.app · **Capture guide:** [docs/screenshots/README.md](docs/screenshots/README.md) · **Walkthrough:** [docs/demo-script.md](docs/demo-script.md)
 
 ---
 

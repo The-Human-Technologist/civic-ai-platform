@@ -101,7 +101,29 @@ We publish explicit **non-goals** in the repository: no automatic challans, no f
 **Repository:** https://github.com/The-Human-Technologist/civic-ai-platform (default branch: `master`)  
 **CI:** GitHub Actions — typecheck, lint, build on every push (passing).
 
-**Footage policy:** The project intentionally does **not** bundle or scrape real CCTV footage. Phase 2 will use licensed public datasets and/or authorized pilot footage. [DATA_SOURCES.md](https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/DATA_SOURCES.md) defines allowed sources, prohibited sources, and contributor privacy rules. The MVP uses mock detections only.
+**Footage policy:** The project intentionally does **not** bundle or scrape real CCTV footage. Phase 2 will use licensed public datasets and/or authorized pilot footage. [DATA_SOURCES.md](https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/DATA_SOURCES.md) defines allowed sources, prohibited sources, and contributor privacy rules. The MVP uses **mock AI only** — no real CCTV bundled, no facial recognition, no automatic challan; human-reviewed alerts only.
+
+**Demo Footage Library:** `/dashboard/demo-footage` — metadata catalog for safe public demos (no raw video in the repo).
+
+**QA audit:** [docs/qa-audit.md](https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/docs/qa-audit.md)
+
+---
+
+## Screenshots
+
+The public repository includes clean website-only screenshots for review (mock AI UI only — no real CCTV, no browser chrome):
+
+- Landing page: `docs/screenshots/landing.png`
+- Dashboard overview: `docs/screenshots/dashboard.png`
+- Mock upload demo: `docs/screenshots/upload-demo.png`
+- Demo Footage Library: `docs/screenshots/demo-footage.png`
+- Data Sources Policy: `docs/screenshots/data-sources.png`
+- Detections / Events: `docs/screenshots/events.png`
+- Human Review: `docs/screenshots/event-review.png`
+- Pilot Proposal: `docs/screenshots/pilot-proposal.png`
+- Privacy Settings: `docs/screenshots/privacy.png`
+
+Regenerate: `npm run capture:screenshots` · Guide: [docs/screenshots/README.md](screenshots/README.md)
 
 ---
 
@@ -198,7 +220,7 @@ I am not claiming production deployment today. I am building the **foundation** 
 - [x] Deploy live demo on Vercel (https://civic-ai-platform-three.vercel.app)
 - [x] GitHub Actions CI (typecheck · lint · build)
 - [x] Codespaces / devcontainer for contributors
-- [ ] Capture 9 screenshots for `docs/screenshots/` (see capture guide)
+- [x] Capture 9 screenshots for `docs/screenshots/` ([capture script](../scripts/capture-screenshots.mjs))
 - [ ] Record 90-second walkthrough video for reviewers
 - [ ] File structured GitHub issues for Phase 2 (from `docs/issues.md`)
 
@@ -229,7 +251,10 @@ I am not claiming production deployment today. I am building the **foundation** 
 | **GitHub repository** | https://github.com/The-Human-Technologist/civic-ai-platform |
 | **Live demo** | https://civic-ai-platform-three.vercel.app |
 | **Demo video (90s)** | *Pending* — `https://youtu.be/YOUR_DEMO_VIDEO_ID` after recording ([demo script](demo-script.md)) |
-| **Screenshots** | Pending — [capture guide](screenshots/README.md) · [checklist](screenshots/PLACEHOLDER.md) |
+| **Screenshots** | [docs/screenshots/](screenshots/) — 9 website-only PNGs (landing, dashboard, upload demo, demo footage, data sources, events, review, proposal, privacy) |
+| **QA audit** | [docs/qa-audit.md](qa-audit.md) |
+| **Data sources policy** | [DATA_SOURCES.md](../DATA_SOURCES.md) |
+| **Demo Footage Library** | https://civic-ai-platform-three.vercel.app/dashboard/demo-footage |
 | **Pilot proposal (live)** | https://civic-ai-platform-three.vercel.app/pilot-proposal |
 | **Architecture** | https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/docs/architecture.md |
 | **Roadmap** | https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/ROADMAP.md |
@@ -252,4 +277,4 @@ titasdatta78900@gmail.com
 
 ---
 
-*Public alpha draft — Jul 2026. Record demo video and add screenshots before final OSS program submission.*
+*Public alpha draft — Jul 2026. Record demo video before final OSS program submission; screenshots are in `docs/screenshots/`.*
