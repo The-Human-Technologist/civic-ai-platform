@@ -102,7 +102,7 @@ Risk terms (`surveillance`, `challan`, `facial recognition`, etc.) appear only i
 | Map | Stylized grid — not GIS-accurate |
 | Evidence | Placeholder clip panel — no real video segments |
 | Privacy toggles | Client-side demo — not enforced server-side |
-| Screenshots | `docs/screenshots/` placeholders — no images in repo yet |
+| Screenshots | 9 website-only screenshots captured and committed in `docs/screenshots/` |
 | Production console | Test against Vercel after deploy for final sign-off |
 
 ---

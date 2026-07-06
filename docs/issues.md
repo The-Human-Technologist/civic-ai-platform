@@ -2,7 +2,13 @@
 
 Suggested GitHub issues for **AI Civic Operations & Road Safety Intelligence Platform**.
 
-Copy each block into a new GitHub Issue on [The-Human-Technologist/civic-ai-platform](https://github.com/The-Human-Technologist/civic-ai-platform/issues).
+**Primary set (12):** Copy from [Structured issue drafts](#structured-issue-drafts-openai--phase-25) below for OpenAI submission / Phase 2 kickoff.
+
+**Extended backlog:** Additional issues for later phases — see [Extended backlog](#extended-backlog).
+
+Repository: [The-Human-Technologist/civic-ai-platform](https://github.com/The-Human-Technologist/civic-ai-platform/issues)
+
+---
 
 **Legend — difficulty**
 
@@ -14,16 +20,145 @@ Copy each block into a new GitHub Issue on [The-Human-Technologist/civic-ai-plat
 
 ---
 
-## How to use this backlog
+## Structured issue drafts (OpenAI / Phase 2–5)
 
-1. Create GitHub labels: `ai-pipeline`, `privacy`, `municipal`, `dashboard`, `maps`, `devops`, `documentation`, `good first issue`, `medium`, `advanced`, `mvp-blocker`, `phase-2`, `phase-3`, `phase-4`, `phase-5`
-2. Optional milestones: `Phase 2 — Real AI`, `Phase 3 — RTSP`, `Phase 4 — Tickets`, `Phase 5 — Security`
-3. Paste title + body from each issue below
-4. Attach links to [ROADMAP.md](../ROADMAP.md) and [README.md](../README.md) in the repo wiki or project board
+Create these on GitHub with `gh issue create` or the web UI. Suggested labels are listed per issue.
+
+### Issue 1 — FFmpeg frame extraction worker
+
+**Title:** `Add FFmpeg frame extraction worker`  
+**Labels:** `phase-2`, `backend`, `video`
+
+**Body:**
+Implement server-side frame extraction from uploaded MP4 files using FFmpeg. Must not process live CCTV streams in public demo mode. Include tests and safety notes.
 
 ---
 
-## 1. Real AI pipeline
+### Issue 2 — YOLO/OpenCV detector service
+
+**Title:** `Add YOLO/OpenCV detector service`  
+**Labels:** `phase-2`, `ai-inference`
+
+**Body:**
+Add a feature-flagged detector service for potholes, waterlogging, garbage overflow, vehicles, and road blockage. Keep mock processor as default. Document model limitations.
+
+---
+
+### Issue 3 — PostgreSQL schema
+
+**Title:** `Add PostgreSQL schema for events, reviews, jobs, and cameras`  
+**Labels:** `phase-2`, `database`
+
+**Body:**
+Design database schema for detection events, human reviews, processing jobs, and authorized camera/source metadata. Include migrations and seed data.
+
+---
+
+### Issue 4 — Async video processing API
+
+**Title:** `Add async video processing API`  
+**Labels:** `phase-2`, `backend`, `api`
+
+**Body:**
+Implement API flow: `POST /videos` creates processing job, worker processes frames, client polls job status, final detections are stored. Keep MVP mock mode intact.
+
+---
+
+### Issue 5 — Face blurring
+
+**Title:** `Add face blurring before evidence persistence`  
+**Labels:** `privacy`, `safety`, `phase-5`
+
+**Body:**
+Add privacy pipeline for blurring faces before saving evidence frames/clips. This is required before real pilot footage storage.
+
+---
+
+### Issue 6 — Number plate masking
+
+**Title:** `Add number plate masking for advisory mode`  
+**Labels:** `privacy`, `safety`, `phase-5`
+
+**Body:**
+Mask plates by default in non-enforcement/advisory deployments. No automatic challan workflow.
+
+---
+
+### Issue 7 — Role-based access control
+
+**Title:** `Add role-based access control`  
+**Labels:** `security`, `phase-5`
+
+**Body:**
+Add viewer, reviewer, and admin roles. Human review actions should require authenticated reviewer/admin role.
+
+---
+
+### Issue 8 — Immutable audit logs
+
+**Title:** `Add immutable audit logs for review actions`  
+**Labels:** `security`, `governance`, `phase-5`
+
+**Body:**
+Record confirm/reject/field verification actions with timestamp, reviewer, event ID, and reason.
+
+---
+
+### Issue 9 — Work-order routing
+
+**Title:** `Add work-order routing module`  
+**Labels:** `phase-4`, `civic-workflow`
+
+**Body:**
+Turn confirmed events into department tasks for PWD, sanitation, traffic, drainage, or ward teams.
+
+---
+
+### Issue 10 — Real GIS map
+
+**Title:** `Add real GIS map integration`  
+**Labels:** `phase-3`, `maps`
+
+**Body:**
+Replace stylized hotspot grid with Mapbox/Leaflet GIS layer. Keep mock fallback for public demo.
+
+---
+
+### Issue 11 — Bengali and Hindi i18n
+
+**Title:** `Add Bengali and Hindi localization`  
+**Labels:** `i18n`, `good-first-issue`
+
+**Body:**
+Add translation scaffold and translate key dashboard/proposal strings into Bengali and Hindi.
+
+---
+
+### Issue 12 — Mock-to-real processor tests
+
+**Title:** `Add tests for mock-to-real processor swap`  
+**Labels:** `tests`, `phase-2`
+
+**Body:**
+Add tests that verify mock processor remains default and real inference only runs behind explicit feature flag.
+
+---
+
+### Suggested labels (create once)
+
+```
+phase-2, phase-3, phase-4, phase-5, backend, ai-inference, privacy, safety,
+security, governance, database, api, maps, i18n, tests, good-first-issue,
+civic-workflow, video
+```
+
+```bash
+gh label create <name> --repo The-Human-Technologist/civic-ai-platform --color "0E8A16" --force
+```
+
+---
+
+## Extended backlog
 
 ---
 

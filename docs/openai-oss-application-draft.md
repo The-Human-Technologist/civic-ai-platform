@@ -221,8 +221,8 @@ I am not claiming production deployment today. I am building the **foundation** 
 - [x] GitHub Actions CI (typecheck · lint · build)
 - [x] Codespaces / devcontainer for contributors
 - [x] Capture 9 screenshots for `docs/screenshots/` ([capture script](../scripts/capture-screenshots.mjs))
-- [ ] Record 90-second walkthrough video for reviewers
-- [ ] File structured GitHub issues for Phase 2 (from `docs/issues.md`)
+- [ ] Record 90-second walkthrough video for reviewers ([demo script](demo-script.md))
+- [x] File structured GitHub issues for Phase 2+ ([docs/issues.md](issues.md) · [Issues #1–#12](https://github.com/The-Human-Technologist/civic-ai-platform/issues))
 
 **Month 2 — Real inference foundation (Phase 2 start)**
 
@@ -251,6 +251,8 @@ I am not claiming production deployment today. I am building the **foundation** 
 | **GitHub repository** | https://github.com/The-Human-Technologist/civic-ai-platform |
 | **Live demo** | https://civic-ai-platform-three.vercel.app |
 | **Demo video (90s)** | *Pending* — `https://youtu.be/YOUR_DEMO_VIDEO_ID` after recording ([demo script](demo-script.md)) |
+| **Submission checklist** | [openai-submission-checklist.md](openai-submission-checklist.md) |
+| **GitHub issues (Phase 2–5)** | https://github.com/The-Human-Technologist/civic-ai-platform/issues |
 | **Screenshots** | [docs/screenshots/](screenshots/) — 9 website-only PNGs (landing, dashboard, upload demo, demo footage, data sources, events, review, proposal, privacy) |
 | **QA audit** | [docs/qa-audit.md](qa-audit.md) |
 | **Data sources policy** | [DATA_SOURCES.md](../DATA_SOURCES.md) |

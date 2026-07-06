@@ -1,170 +1,154 @@
-# 90-second demo script
+# 90-second demo video script
 
-**AI Civic Operations & Road Safety Intelligence Platform**
-*For MLA briefings · municipal & traffic officers · WEBEL/IT · open-source program reviewers*
-
-**Duration:** ~90 seconds spoken · ~2 minutes with clicks
-**Prerequisites:** `npm run dev` → http://localhost:3000 · reset demo data if needed (Settings → Reset demo events)
-
----
-
-## Audience note (say internally, not aloud)
-
-| Viewer | Emphasise |
-|--------|-----------|
-| **MLA / elected rep** | Constituency service, faster civic response, no surveillance |
-| **Municipal officer** | Potholes, waste, drainage — human-confirmed tickets |
-| **Traffic officer** | Advisory road safety only — **no auto challan** |
-| **WEBEL / IT** | Open stack, AGPL, Phase 2 API/RTSP path |
-| **Open-source reviewer** | Honest MVP scope, mock AI, privacy architecture |
+**AI Civic Operations & Road Safety Intelligence Platform**  
+**Live URL:** https://civic-ai-platform-three.vercel.app  
+**Duration target:** ~90 seconds (hard cap: 2 minutes)  
+**Status:** Script ready — **video not recorded yet**
 
 ---
 
-## Script
+## Before you record
 
-### [0:00 – 0:15] Introduce the project
+- Use **browser full screen** or a clean window (no desktop taskbar).
+- Do **not** show bookmarks bar, browser tabs, address bar overlays, personal apps, or private notifications.
+- Use the **live demo** above (or `npm run dev` locally if Vercel is down).
+- Reset demo data if needed: **Dashboard → Privacy → Reset demo events**.
+- Upload finished video as **YouTube unlisted** — add the real link to `docs/openai-oss-application-draft.md` only after recording.
 
-**[Screen: Landing page — `/`]**
+**Honest framing:** Mock AI only · no real CCTV bundled · no facial recognition · no automatic challan · human-reviewed alerts only.
 
-> “This is an open-source **civic operations and road safety intelligence** platform — built for municipalities and traffic departments in India.
+---
+
+## Click path (rehearse once)
+
+```
+/  →  /dashboard  →  /dashboard/demo-footage  →
+/dashboard/upload?demo=synthetic-barasat-junction  →  (Run Mock Processing)  →
+/dashboard/events  →  /dashboard/events/EVT-BRS-2401  →
+/dashboard/data-sources  →  /dashboard/settings  →  /pilot-proposal
+```
+
+---
+
+## Voiceover script
+
+### 0–10 sec — Landing page
+
+**[Screen: `/`]**
+
+> “This is an open-source **civic operations and road safety intelligence** platform for municipalities in India.
 >
-> It uses **CCTV and video footage you already have** to surface potholes, waterlogging, illegal parking, congestion, and advisory safety events.
->
-> It is **not a surveillance system** and **does not issue automatic fines**. Every alert goes to a **human reviewer** first.”
+> It helps turn **existing CCTV and uploaded video** into **human-reviewed alerts** — not automatic fines and not a surveillance system.”
 
 **Click:** **Live Dashboard Demo**
 
 ---
 
-### [0:15 – 0:30] Show dashboard
+### 10–20 sec — Dashboard
 
-**[Screen: Dashboard — `/dashboard`]**
+**[Screen: `/dashboard`]**
 
-> “This is the **operations overview** for a 30-day pilot — here, the Barasat corridor: Colony More Junction and Station Road.
+> “Here’s the **operations overview** for a 30-day pilot corridor in Barasat.
 >
-> You see detections today, what’s **pending official review**, what’s confirmed, and corridor indicators — parking, potholes, waterlogging.
+> You see detections today, what’s **pending human review**, confirmed items, and corridor indicators — parking, potholes, waterlogging.
 >
-> Note **enforcement mode is off** — this is decision support, not auto prosecution.”
+> **Enforcement mode is off** — this is advisory intelligence only.”
 
-**Point to:** Pilot banner · Pending review count · “Enforcement mode: Off”
+**Point to:** Pilot banner · Pending review · Charts with visible counts
 
 ---
 
-### [0:30 – 0:45] Show mock detection
+### 20–35 sec — Demo Footage Library
 
-**[Screen: Video & Feeds — `/dashboard/upload`]**
+**[Screen: `/dashboard/demo-footage`]**
 
-> “Officials can upload a clip or select a **demo CCTV feed** — for example, Colony More Junction from traffic police inventory.
+> “The **Demo Footage Library** catalogs **safe synthetic scenarios** — metadata only.
 >
-> The system runs **video analytics** — in this MVP, mock processing that shows the real workflow: upload, analyse, generate detection events for review.”
+> No raw CCTV is bundled in the repository. Stock clips and public datasets are linked for **manual license review** before any real use.”
 
-**Click:** **Run demo analysis** on Colony More Junction
-**Wait:** Progress completes (~3 seconds)
-
-> “In production, this connects to YOLO and OpenCV workers — the architecture is ready; this demo uses synthetic output.”
-
-**Click:** **Review new detections** (or sidebar → Detections)
+**Point to:** “Safe for public mock demo” section
 
 ---
 
-### [0:45 – 1:00] Show human review
+### 35–50 sec — Upload mock processing
 
-**[Screen: Events table — `/dashboard/events` → open EVT-BRS-2402 or any Pending row → Review]**
+**[Screen: `/dashboard/upload?demo=synthetic-barasat-junction`]**
 
-> “Every detection lands in a **review queue**. Filters by type, severity, location, and status.
+> “Officials can select a **synthetic junction demo** and run **mock processing**.
 >
-> An authorised officer opens an event — sees location, confidence, AI description, and evidence placeholder. They **confirm**, **reject as false positive**, or **send for field verification**.
+> In this MVP, detections are **simulated** to show the workflow: upload → analyse → queue for review. Real YOLO inference is planned for Phase 2.”
+
+**Click:** **Run Mock Processing** · wait for “Detections generated”
+
+---
+
+### 50–65 sec — Events / detections
+
+**[Screen: `/dashboard/events`]**
+
+> “Every detection lands in a **review log**. Officers filter by type, status, severity, and location.
 >
-> No challan, no court notice — only **assisted review**.”
+> Nothing is acted on until a **human reviewer** confirms, rejects, or sends it for field verification.”
 
-**[Screen: Event review — `/dashboard/events/EVT-BRS-2402`]**
+**Point to:** Filter bar · mix of pending and confirmed rows
 
-**Point to:** Disclaimer banner · Confirm / Reject buttons
+**Click:** **Review** on `EVT-BRS-2401` (or any pending row)
 
 ---
 
-### [1:00 – 1:15] Show report
+### 65–75 sec — Event review
 
-**[Screen: Reports — `/dashboard/reports`]**
+**[Screen: `/dashboard/events/EVT-BRS-2401`]**
 
-> “Confirmed patterns roll into a **30-day pilot report** — top problem areas, event breakdown, suggested interventions for PWD, sanitation, and drainage.
+> “On the review page, the officer sees location, confidence, AI description, and an evidence placeholder.
 >
-> This is what you bring to a **ward meeting or district review** — printable, shareable, audit-friendly.”
+> They can **confirm**, **reject a false positive**, request **field verification**, or **export a mock JSON report** — still no automatic challan.”
 
-**Scroll briefly:** Top 5 problem areas · Review statistics
+**Point to:** Disclaimer · Reviewer actions · Export evidence report (mock JSON)
 
 ---
 
-### [1:15 – 1:25] Explain privacy safeguards
+### 75–85 sec — Data Sources & Privacy
 
-**[Screen: Privacy — `/dashboard/settings`]**
+**[Screen: `/dashboard/data-sources` → `/dashboard/settings`]**
 
-> “Privacy is built in: **no facial recognition**, face blurring and plate masking planned, **human review required**, limited retention, audit logs in production.
+> “**Data Sources** spells out what’s allowed — licensed datasets, synthetic demos, authorized pilot footage — and what’s **not**: random CCTV scraping or committing real video to GitHub.
 >
-> All data in this demo is **synthetic** — fake event IDs, public road names only.”
+> **Privacy settings** show the posture: no facial recognition, human review required, retention limits — toggles are **client-side demo** today, server enforcement is planned.”
 
-**Point to:** MVP limitations list · Facial recognition disabled toggle
+**Scroll briefly** on data-sources allowed/not-allowed cards · privacy toggles
 
 ---
 
-### [1:25 – 1:30] End with pilot proposal
+### 85–90 sec — Pilot proposal
 
-**[Screen: Pilot proposal — `/pilot-proposal`]**
+**[Screen: `/pilot-proposal`]**
 
-> “We’ve published a full **30-day pilot proposal** — one road, one junction, uploaded footage, human review, civic reports, **no enforcement automation**.
+> “We’ve published a **30-day municipal pilot proposal** — one road, one junction, human review, civic reports, **no enforcement automation**.
 >
-> The codebase is **open source under AGPL** — municipalities, WEBEL, and civic-tech partners can evaluate, contribute, and pilot without vendor lock-in.
->
-> Thank you — happy to walk through technical architecture or Phase 2 RTSP and real AI integration.”
+> The project is **open source under AGPL**. Thank you.”
 
-**Optional pause on:** Objective + one-road/one-junction card
+**End card (optional):** Repo URL + “Mock MVP v0.1 · Human review required”
 
 ---
 
-## One-line elevator pitch (if interrupted at 15 seconds)
+## One-line pitch (if interrupted)
 
-> “Open-source dashboard that turns existing CCTV into **human-reviewed civic and road-safety alerts** — potholes to congestion — **no auto fines, no face recognition**, built for 30-day municipal pilots.”
-
----
-
-## Q&A prep (short answers)
-
-| Question | Answer |
-|----------|--------|
-| “Is this live on Barasat CCTV?” | “This release is a **demo with mock detections**. Phase 3 adds authorised RTSP feeds after MoU and legal review.” |
-| “Will it issue challans?” | “**No.** Explicit non-goal. Advisory analytics + human review only.” |
-| “Facial recognition?” | “**Not implemented.** Disabled by design. Blur on evidence planned.” |
-| “Who owns the data?” | “Deploying municipality, under their DPIA and retention policy. We provide software, not a data broker.” |
-| “Cost?” | “Open source. Pilot infra cost depends on camera count and GPU — Phase 2 estimate after scope sign-off.” |
-| “WEBEL role?” | “Hosting, security audit, integration with state smart-city stack — we document APIs for that path.” |
+> “Open-source dashboard that turns existing video into **human-reviewed civic alerts** — **no auto fines, no face recognition**, built for 30-day municipal pilots.”
 
 ---
 
-## Demo run-of-show (click order)
+## After recording
 
-```
-/  →  /dashboard  →  /dashboard/upload  →  (run demo)  →
-/dashboard/events  →  /dashboard/events/EVT-BRS-2402  →
-/dashboard/reports  →  /dashboard/settings  →  /pilot-proposal
-```
-
-**Total navigation:** 7 pages · rehearse once for timing.
-
----
-
-## Recording tips (GitHub / grant video)
-
-- Record at **1440×900**, 30fps
-- Use system cursor highlighting if available
-- Narrate the script; avoid background music
-- End card: repository URL + “AGPL-3.0 · Mock MVP v0.1”
-- Attach screenshots from [screenshots/README.md](screenshots/README.md) to the application form
+1. Upload to **YouTube (unlisted)**.
+2. Paste the real URL into `docs/openai-oss-application-draft.md` (replace `YOUR_DEMO_VIDEO_ID` placeholder).
+3. Check off the item in [openai-submission-checklist.md](openai-submission-checklist.md).
 
 ---
 
 ## Related docs
 
 - [Screenshot capture guide](screenshots/README.md)
-- [Pilot proposal (live page)](http://localhost:3000/pilot-proposal)
-- [README — mission & MVP scope](../README.md)
-- [PRIVACY.md](../PRIVACY.md)
+- [OpenAI submission checklist](openai-submission-checklist.md)
+- [QA audit](qa-audit.md)
+- [README](../README.md)
