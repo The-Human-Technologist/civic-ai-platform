@@ -1,0 +1,9 @@
+[
+  {
+    "_comment": "SYNTHETIC DEMO DATA — not real events. See src/lib/data/README.md",
+    "id": "EVT-BRS-2401",
+    "type": "illegal_parking",
+    "locationId": "station_road",
+    "note": "Reference only. Live seed data: getSeedEvents() in src/lib/mock-ai/processor.ts"
+  }
+]
