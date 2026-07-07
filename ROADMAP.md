@@ -40,6 +40,17 @@ Full product context: [README.md](README.md)
 
 **Goal:** Replace `src/lib/mock-ai/processor.ts` with a worker-based inference service.
 
+### Phase 2A foundation checklist
+
+- [x] Add MongoDB persistence for processing jobs **(foundation scaffold; optional demo fallback)**
+- [x] Add separate Python FastAPI worker **(foundation scaffold)**
+- [x] Add FFmpeg/OpenCV frame extraction **(scaffold only)**
+- [x] Add privacy masking step **(scaffold only)**
+- [x] Add feature-flagged worker mode **(foundation scaffold)**
+- [ ] Add YOLO/OpenCV model adapter
+- [ ] Store detections for human review
+- [ ] Pilot with authorized uploaded footage only
+
 | Work item | Detection types |
 |-----------|-----------------|
 | FFmpeg frame extraction | All video sources |

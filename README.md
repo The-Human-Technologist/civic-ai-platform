@@ -271,6 +271,35 @@ Website-only captures at 1440×900 (Playwright viewport — no browser chrome). 
 
 ---
 
+## Phase 2A: Real Processing Foundation
+
+The current release remains **mock AI by default**. Phase 2A adds the safe scaffolding needed to
+move toward a real pilot without falsely claiming production-ready inference.
+
+What was added in this foundation layer:
+
+- shared processing-job and detection types
+- optional MongoDB-backed job persistence with an in-memory demo fallback
+- Vercel-safe processing job API scaffolding
+- a separate Python worker scaffold for future FFmpeg/OpenCV processing
+- privacy-masking scaffold for faces and number plates before evidence persistence
+
+What is **still planned**, not shipped:
+
+- real YOLO/OpenCV inference
+- live CCTV / RTSP ingest
+- production evidence storage
+- server-enforced privacy pipeline hardening
+
+Scope remains **authorized footage only** for future pilots.
+
+More detail:
+
+- [docs/real-pilot-requirements.md](docs/real-pilot-requirements.md)
+- [services/ai-worker/README.md](services/ai-worker/README.md)
+
+---
+
 ## Open-source roadmap
 
 High-level phases. Detail: [ROADMAP.md](ROADMAP.md).

@@ -32,7 +32,8 @@
     "typecheck": "tsc --noEmit",
     "prepare:data": "node scripts/prepare-demo-data.mjs",
     "verify:footage": "node scripts/verify-footage-policy.js",
-    "capture:screenshots": "node scripts/capture-screenshots.mjs"
+    "capture:screenshots": "node scripts/capture-screenshots.mjs",
+    "verify:phase2": "node scripts/verify-phase2-foundation.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -43,6 +44,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "lucide-react": "^1.23.0",
+    "mongodb": "^7.4.0",
     "next": "16.2.10",
     "next-themes": "^0.4.6",
     "react": "19.2.4",

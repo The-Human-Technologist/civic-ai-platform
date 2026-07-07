@@ -1,0 +1,58 @@
+import { existsSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+const requiredPaths = [
+  "src/lib/processing/types.ts",
+  "src/lib/db/mongodb.ts",
+  "src/lib/db/processing-jobs.ts",
+  "src/app/api/processing/jobs/route.ts",
+  "src/app/api/processing/jobs/[id]/route.ts",
+  "services/ai-worker/README.md",
+  "services/ai-worker/main.py",
+  "services/ai-worker/app/frame_extractor.py",
+  "services/ai-worker/app/privacy_masker.py",
+  "services/ai-worker/app/detectors.py",
+  "services/ai-worker/app/schemas.py",
+  "services/ai-worker/app/config.py",
+  "docs/real-pilot-requirements.md",
+];
+
+const missing = requiredPaths.filter((relativePath) => !existsSync(resolve(root, relativePath)));
+if (missing.length > 0) {
+  console.error("Missing Phase 2A foundation files:");
+  for (const item of missing) console.error(`- ${item}`);
+  process.exit(1);
+}
+
+const envExample = execSync("pwsh -NoProfile -Command \"Get-Content '.env.example'\"", {
+  cwd: root,
+  encoding: "utf8",
+});
+
+for (const requiredEnv of ["AI_PROCESSING_MODE", "MONGODB_URI"]) {
+  if (!envExample.includes(requiredEnv)) {
+    console.error(`.env.example is missing ${requiredEnv}`);
+    process.exit(1);
+  }
+}
+
+const trackedFiles = execSync("git ls-files", { cwd: root, encoding: "utf8" }).split(/\r?\n/);
+const forbiddenPattern =
+  /\.(mp4|mov|webm|avi|mkv|zip|tar|tar\.gz|pt|onnx|engine)$/i;
+const forbiddenDirectoryPattern = /^(data|datasets|videos)\//i;
+
+const forbidden = trackedFiles.filter(
+  (file) => file && (forbiddenPattern.test(file) || forbiddenDirectoryPattern.test(file)),
+);
+
+if (forbidden.length > 0) {
+  console.error("Forbidden tracked files detected:");
+  for (const file of forbidden) console.error(`- ${file}`);
+  process.exit(1);
+}
+
+console.log("Phase 2A foundation verified.");
