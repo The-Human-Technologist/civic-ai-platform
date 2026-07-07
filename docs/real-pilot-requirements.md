@@ -144,3 +144,26 @@ Report / field verification / work order
 The current portal already proves the **workflow and governance model**.
 
 Phase 2A adds the safe foundation for a real pilot, but it does **not** mean real AI is shipped yet.
+
+## Phase 2A.1 processing job API
+
+The upload page can now **create and read processing jobs** through the frontend API foundation.
+
+What this means today:
+
+- synthetic demo scenarios can create mock processing jobs
+- local file selection can create a **metadata-only** uploaded-video job
+- current public mode remains **metadata/mock only**
+- no real video bytes are uploaded yet
+- real processing still requires a separate worker deployment and authorized footage
+
+This step is useful because it proves the future workflow:
+
+```text
+frontend upload page
+→ create processing job
+→ worker processes authorized footage later
+→ detections come back for human review
+```
+
+That workflow is now scaffolded, but not yet production-ready.

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -22,6 +22,17 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DEMO_FEEDS } from "@/lib/data/locations";
 import { getDemoFootageById, getSyntheticUploadDemos } from "@/lib/demo-footage";
 import { processVideoMock, simulateUploadProgress } from "@/lib/mock-ai/processor";
+import {
+  createProcessingJob,
+  getProcessingJob,
+  pollProcessingJob,
+} from "@/lib/processing/client";
+import {
+  PROCESSING_JOB_STATUSES,
+  type ProcessingDetection,
+  type ProcessingJob,
+  type ProcessingMode,
+} from "@/lib/processing/types";
 import { useEventStore } from "@/lib/data/event-store";
 import type { ProcessingStage } from "@/types";
 import { DISCLAIMER, DEMO_DATA_NOTICE } from "@/lib/constants";
@@ -40,6 +51,19 @@ const STAGE_LABELS: Record<ProcessingStage, string> = {
   processing: "AI processing…",
   complete: "Detections generated",
   error: "Error",
+};
+
+type ProcessingConfig = {
+  aiProcessingMode: ProcessingMode;
+  workerConfigured: boolean;
+  mongoConfigured: boolean;
+  publicLimitations: string[];
+};
+
+type SelectedFileMeta = {
+  name: string;
+  size: number;
+  type: string;
 };
 
 function UploadPageFallback() {
@@ -76,6 +100,13 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
   } | null>(null);
   const [activeFeed, setActiveFeed] = useState<string | null>(null);
   const [activeDemoFootage, setActiveDemoFootage] = useState<string | null>(null);
+  const [selectedFileMeta, setSelectedFileMeta] = useState<SelectedFileMeta | null>(null);
+  const [processingConfig, setProcessingConfig] = useState<ProcessingConfig | null>(null);
+  const [activeJob, setActiveJob] = useState<ProcessingJob | null>(null);
+  const [jobDetections, setJobDetections] = useState<ProcessingDetection[]>([]);
+  const [jobNote, setJobNote] = useState<string | null>(null);
+  const [jobError, setJobError] = useState<string | null>(null);
+  const [jobLoading, setJobLoading] = useState(false);
   const syntheticDemos = getSyntheticUploadDemos();
 
   const demoParam = searchParams.get("demo");
@@ -88,6 +119,29 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
   }, [demoParam]);
 
   const invalidDemoParam = Boolean(demoParam && !preselectedDemo);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadConfig() {
+      try {
+        const response = await fetch("/api/processing/config", { cache: "no-store" });
+        const data = (await response.json()) as ProcessingConfig;
+        if (!cancelled) {
+          setProcessingConfig(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setProcessingConfig(null);
+        }
+      }
+    }
+
+    void loadConfig();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const runPipeline = useCallback(
     async (source: {
@@ -131,6 +185,11 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
       toast.error("Please select a video file");
       return;
     }
+    setSelectedFileMeta({
+      name: file.name,
+      size: file.size,
+      type: file.type,
+    });
     setFileName(file.name);
     setActiveFeed(null);
     setActiveDemoFootage(null);
@@ -154,6 +213,93 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
     setLastResult(null);
     setStage("uploading");
     await runPipeline({ demoFootageId, fileName: title });
+  }
+
+  async function syncJob(jobId: string) {
+    const result = await getProcessingJob(jobId);
+    setActiveJob(result.job);
+    setJobDetections(result.detections ?? []);
+    setJobNote(result.note ?? null);
+    return result;
+  }
+
+  async function handleCreateSyntheticJob() {
+    if (!preselectedDemo) return;
+
+    setJobLoading(true);
+    setJobError(null);
+    try {
+      const created = await createProcessingJob({
+        sourceType: "synthetic_demo",
+        demoId: preselectedDemo.id,
+        videoName: preselectedDemo.title,
+        locationLabel: preselectedDemo.locationLabel,
+        selectedScenario: preselectedDemo.useCase,
+        requestedMode: "mock",
+      });
+      setActiveJob(created.job);
+      setJobDetections(created.detections ?? []);
+      setJobNote(created.note ?? null);
+
+      const finalResult = await pollProcessingJob(created.job.id, {
+        intervalMs: 500,
+        timeoutMs: 4000,
+      }).catch(async () => syncJob(created.job.id));
+
+      setActiveJob(finalResult.job);
+      setJobDetections(finalResult.detections ?? []);
+      setJobNote(finalResult.note ?? created.note ?? null);
+      toast.success(`Processing job ${finalResult.job.id} created`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to create processing job";
+      setJobError(message);
+      toast.error(message);
+    } finally {
+      setJobLoading(false);
+    }
+  }
+
+  async function handleCreateMetadataOnlyJob() {
+    if (!selectedFileMeta) {
+      toast.error("Choose a file first to capture metadata");
+      return;
+    }
+
+    setJobLoading(true);
+    setJobError(null);
+    try {
+      const requestedMode: ProcessingMode =
+        processingConfig?.aiProcessingMode === "worker" && processingConfig.workerConfigured
+          ? "worker"
+          : "mock";
+
+      const created = await createProcessingJob({
+        sourceType: "uploaded_video",
+        videoName: selectedFileMeta.name,
+        locationLabel: "Metadata-only upload foundation",
+        selectedScenario: `${selectedFileMeta.type} · ${Math.round(selectedFileMeta.size / 1024)} KB`,
+        requestedMode,
+      });
+      setActiveJob(created.job);
+      setJobDetections(created.detections ?? []);
+      setJobNote(created.note ?? null);
+
+      const finalResult = await pollProcessingJob(created.job.id, {
+        intervalMs: 700,
+        timeoutMs: requestedMode === "mock" ? 4000 : 2500,
+      }).catch(async () => syncJob(created.job.id));
+
+      setActiveJob(finalResult.job);
+      setJobDetections(finalResult.detections ?? []);
+      setJobNote(finalResult.note ?? created.note ?? null);
+      toast.success(`Metadata-only job ${finalResult.job.id} created`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to create metadata-only job";
+      setJobError(message);
+      toast.error(message);
+    } finally {
+      setJobLoading(false);
+    }
   }
 
   const showProgressPanel = stage !== "idle" || lastResult !== null;
@@ -195,6 +341,15 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm">
+          {processingConfig ? (
+            <div className="rounded-lg border bg-muted/10 p-3 text-sm">
+              <p className="font-medium">Current processing mode: {processingConfig.aiProcessingMode}</p>
+              <p className="mt-1 text-muted-foreground">
+                Worker configured: {processingConfig.workerConfigured ? "yes" : "no"} · MongoDB
+                configured: {processingConfig.mongoConfigured ? "yes" : "no"}
+              </p>
+            </div>
+          ) : null}
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
             <span>Mock processing</span>
             <Badge variant="default">Available now</Badge>
@@ -223,6 +378,166 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
             <span>Live CCTV/RTSP</span>
             <Badge variant="destructive">Not enabled</Badge>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base">Processing job foundation</CardTitle>
+          <CardDescription>
+            This public alpha still runs mock AI by default. Phase 2A adds a safe job API
+            foundation for future authorized uploaded-video processing. Real video processing
+            requires a separate worker and authorized footage.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <Alert>
+            <Info className="size-4" />
+            <AlertTitle>Public alpha limitations</AlertTitle>
+            <AlertDescription>
+              Mock AI is default. Real video bytes are not uploaded yet. Worker mode is scaffolded.
+              No facial recognition, no automatic challan, human review required.
+            </AlertDescription>
+          </Alert>
+
+          {preselectedDemo ? (
+            <div className="rounded-lg border p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-medium">Synthetic demo job</p>
+                  <p className="text-sm text-muted-foreground">
+                    Create a mock processing job for {preselectedDemo.title}.
+                  </p>
+                </div>
+                <Button onClick={handleCreateSyntheticJob} disabled={jobLoading}>
+                  {jobLoading ? <Loader2 className="size-4 animate-spin" data-icon="inline-start" /> : null}
+                  Create mock processing job
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="rounded-lg border p-4">
+            <div className="flex flex-col gap-2">
+              <p className="font-medium">Metadata-only upload job</p>
+              <p className="text-sm text-muted-foreground">
+                Real upload is not enabled in public alpha. This creates a metadata-only processing
+                job for workflow testing.
+              </p>
+              {selectedFileMeta ? (
+                <div className="rounded-lg bg-muted/20 p-3 text-sm text-muted-foreground">
+                  <p>
+                    <span className="font-medium text-foreground">File:</span> {selectedFileMeta.name}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">Type:</span> {selectedFileMeta.type}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">Size:</span>{" "}
+                    {(selectedFileMeta.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Choose any local video file first. The file bytes stay local; only metadata is
+                  sent to the job API.
+                </p>
+              )}
+              <div>
+                <Button
+                  variant="outline"
+                  disabled={!selectedFileMeta || jobLoading}
+                  onClick={handleCreateMetadataOnlyJob}
+                >
+                  {jobLoading ? <Loader2 className="size-4 animate-spin" data-icon="inline-start" /> : null}
+                  Create metadata-only job
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {(activeJob || jobError || jobNote) && (
+            <div className="rounded-lg border p-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-medium">Processing job status</p>
+                {activeJob ? <Badge variant="outline">{activeJob.status}</Badge> : null}
+              </div>
+              {jobError ? <p className="mt-2 text-sm text-destructive">{jobError}</p> : null}
+              {jobNote ? <p className="mt-2 text-sm text-muted-foreground">{jobNote}</p> : null}
+              {activeJob ? (
+                <>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-lg bg-muted/20 p-3 text-sm">
+                      <p><span className="font-medium">Job ID:</span> {activeJob.id}</p>
+                      <p><span className="font-medium">Mode:</span> {activeJob.mode}</p>
+                      <p><span className="font-medium">Source type:</span> {activeJob.sourceType}</p>
+                      <p><span className="font-medium">Status:</span> {activeJob.status}</p>
+                      <p><span className="font-medium">Progress:</span> {activeJob.progress}%</p>
+                    </div>
+                    <div className="rounded-lg bg-muted/20 p-3 text-sm">
+                      <p><span className="font-medium">Created at:</span> {new Date(activeJob.createdAt).toLocaleString()}</p>
+                      <p><span className="font-medium">Updated at:</span> {new Date(activeJob.updatedAt).toLocaleString()}</p>
+                      {activeJob.locationLabel ? (
+                        <p><span className="font-medium">Location label:</span> {activeJob.locationLabel}</p>
+                      ) : null}
+                      {activeJob.selectedScenario ? (
+                        <p><span className="font-medium">Scenario:</span> {activeJob.selectedScenario}</p>
+                      ) : null}
+                      {activeJob.error ? (
+                        <p className="text-destructive"><span className="font-medium">Error:</span> {activeJob.error}</p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <Progress value={activeJob.progress} className="h-2" />
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                      {PROCESSING_JOB_STATUSES.map((statusName) => {
+                        const isActive = activeJob.status === statusName;
+                        const isDone =
+                          PROCESSING_JOB_STATUSES.indexOf(statusName) <
+                          PROCESSING_JOB_STATUSES.indexOf(activeJob.status);
+                        return (
+                          <div
+                            key={statusName}
+                            className="rounded-lg border px-3 py-2 text-sm"
+                          >
+                            <p className="font-medium capitalize">
+                              {statusName.replaceAll("_", " ")}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {isActive ? "Current" : isDone ? "Reached" : "Pending"}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              ) : null}
+            </div>
+          )}
+
+          {jobDetections.length > 0 && (
+            <div className="rounded-lg border p-4">
+              <p className="font-medium">Mock detections from job API</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {jobDetections.map((detection) => (
+                  <div key={detection.id} className="rounded-lg border bg-muted/10 p-3 text-sm">
+                    <p><span className="font-medium">Type:</span> {detection.type}</p>
+                    <p><span className="font-medium">Confidence:</span> {(detection.confidence * 100).toFixed(0)}%</p>
+                    <p><span className="font-medium">Severity:</span> {detection.severity}</p>
+                    <p><span className="font-medium">Location:</span> {detection.locationLabel}</p>
+                    {typeof detection.frameTimestampSec === "number" ? (
+                      <p><span className="font-medium">Frame time:</span> {detection.frameTimestampSec}s</p>
+                    ) : null}
+                    <p><span className="font-medium">Privacy masked:</span> {detection.privacyMasked ? "Yes" : "No"}</p>
+                    <p><span className="font-medium">Human review:</span> {detection.humanReviewStatus}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

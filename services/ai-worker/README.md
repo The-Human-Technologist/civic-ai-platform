@@ -14,6 +14,7 @@ Why separate?
 
 ## What is implemented now
 
+- frontend can create processing job records through the Next.js API
 - `GET /health` FastAPI health check
 - `POST /process-demo-job` scaffold using a mock detector
 - `POST /process-video-job` scaffold for future uploaded-video jobs
@@ -24,6 +25,7 @@ Why separate?
 ## What is not implemented yet
 
 - No model downloads
+- No model weights bundled in this repository
 - No YOLO weights
 - No RTSP / live CCTV support
 - No facial recognition
@@ -68,3 +70,4 @@ Faces and number plates should be masked **before evidence persistence**. Detect
 - Detector adapter runs YOLO/OpenCV models behind feature flags
 - Detections are stored for human review
 - Public demo remains mock by default until pilot hardening is complete
+- Worker integration remains scaffolded until a safe backend deployment is available

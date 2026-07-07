@@ -35,7 +35,10 @@ export async function createProcessingJob(
     updatedAt: timestamp,
     videoName: input.videoName,
     demoId: input.demoId,
+    locationLabel: input.locationLabel,
+    selectedScenario: input.selectedScenario,
     mode: input.mode,
+    requestedMode: input.requestedMode ?? input.mode,
   };
 
   if (shouldUseInMemoryStore()) {

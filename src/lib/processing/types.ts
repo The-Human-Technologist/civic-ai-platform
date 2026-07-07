@@ -47,7 +47,10 @@ export interface ProcessingJob {
   updatedAt: string;
   videoName?: string;
   demoId?: string;
+  locationLabel?: string;
+  selectedScenario?: string;
   mode: ProcessingMode;
+  requestedMode?: ProcessingMode;
   error?: string;
 }
 
@@ -73,4 +76,32 @@ export interface CreateProcessingJobInput {
   videoName?: string;
   demoId?: string;
   mode: ProcessingMode;
+  locationLabel?: string;
+  selectedScenario?: string;
+  requestedMode?: ProcessingMode;
+}
+
+export interface CreateProcessingJobRequest {
+  sourceType: ProcessingSourceType;
+  demoId?: string;
+  videoName?: string;
+  locationLabel?: string;
+  selectedScenario?: string;
+  requestedMode?: ProcessingMode;
+}
+
+export interface ProcessingJobsListResponse {
+  jobs: ProcessingJob[];
+  mode: ProcessingMode;
+  note: string;
+}
+
+export interface ProcessingJobResponse {
+  job: ProcessingJob;
+  detections?: ProcessingDetection[];
+  mode?: ProcessingMode;
+  note?: string;
+  eventCount?: number;
+  framesAnalyzed?: number;
+  processingMs?: number;
 }

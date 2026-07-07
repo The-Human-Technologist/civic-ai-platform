@@ -7,10 +7,12 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const requiredPaths = [
   "src/lib/processing/types.ts",
+  "src/lib/processing/client.ts",
   "src/lib/db/mongodb.ts",
   "src/lib/db/processing-jobs.ts",
   "src/app/api/processing/jobs/route.ts",
   "src/app/api/processing/jobs/[id]/route.ts",
+  "src/app/api/processing/config/route.ts",
   "services/ai-worker/README.md",
   "services/ai-worker/main.py",
   "services/ai-worker/app/frame_extractor.py",
@@ -38,6 +40,32 @@ for (const requiredEnv of ["AI_PROCESSING_MODE", "MONGODB_URI"]) {
     console.error(`.env.example is missing ${requiredEnv}`);
     process.exit(1);
   }
+}
+
+const uploadClient = execSync(
+  "pwsh -NoProfile -Command \"Get-Content 'src/app/dashboard/upload/upload-client.tsx'\"",
+  {
+    cwd: root,
+    encoding: "utf8",
+  },
+);
+
+if (!uploadClient.includes("createProcessingJob")) {
+  console.error("Upload page does not reference processing jobs yet");
+  process.exit(1);
+}
+
+const pilotDoc = execSync(
+  "pwsh -NoProfile -Command \"Get-Content 'docs/real-pilot-requirements.md'\"",
+  {
+    cwd: root,
+    encoding: "utf8",
+  },
+);
+
+if (!pilotDoc.includes("Phase 2A.1 processing job API")) {
+  console.error("docs/real-pilot-requirements.md is missing the Phase 2A.1 processing job API section");
+  process.exit(1);
 }
 
 const trackedFiles = execSync("git ls-files", { cwd: root, encoding: "utf8" }).split(/\r?\n/);

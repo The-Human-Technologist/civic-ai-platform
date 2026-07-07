@@ -25,10 +25,15 @@ export async function GET(_: Request, context: RouteContext) {
   }
 
   const detections = await listProcessingDetections(id);
+  const note =
+    job.sourceType === "uploaded_video"
+      ? "This is a metadata-only uploaded-video job in the public alpha. Real video execution still belongs in a separate worker service."
+      : "This mock processing job represents the future worker flow using synthetic/public-safe demo inputs only.";
+
   return NextResponse.json({
     job,
     detections,
-    note: "This endpoint reports job metadata only. Real uploaded-video execution belongs in a separate worker service.",
+    note,
   });
 }
 
