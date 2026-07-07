@@ -47,8 +47,12 @@ export interface ProcessingJob {
   updatedAt: string;
   videoName?: string;
   demoId?: string;
+  authorizedFootageIntakeId?: string;
+  storageObjectKey?: string;
   locationLabel?: string;
   selectedScenario?: string;
+  privacyMaskingRequired?: boolean;
+  retentionDays?: number;
   mode: ProcessingMode;
   requestedMode?: ProcessingMode;
   error?: string;
@@ -76,8 +80,12 @@ export interface CreateProcessingJobInput {
   videoName?: string;
   demoId?: string;
   mode: ProcessingMode;
+  authorizedFootageIntakeId?: string;
+  storageObjectKey?: string;
   locationLabel?: string;
   selectedScenario?: string;
+  privacyMaskingRequired?: boolean;
+  retentionDays?: number;
   requestedMode?: ProcessingMode;
 }
 
@@ -85,8 +93,12 @@ export interface CreateProcessingJobRequest {
   sourceType: ProcessingSourceType;
   demoId?: string;
   videoName?: string;
+  authorizedFootageIntakeId?: string;
+  storageObjectKey?: string;
   locationLabel?: string;
   selectedScenario?: string;
+  privacyMaskingRequired?: boolean;
+  retentionDays?: number;
   requestedMode?: ProcessingMode;
 }
 

@@ -35,8 +35,12 @@ export async function createProcessingJob(
     updatedAt: timestamp,
     videoName: input.videoName,
     demoId: input.demoId,
+    authorizedFootageIntakeId: input.authorizedFootageIntakeId,
+    storageObjectKey: input.storageObjectKey,
     locationLabel: input.locationLabel,
     selectedScenario: input.selectedScenario,
+    privacyMaskingRequired: input.privacyMaskingRequired,
+    retentionDays: input.retentionDays,
     mode: input.mode,
     requestedMode: input.requestedMode ?? input.mode,
   };

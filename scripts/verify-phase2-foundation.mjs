@@ -9,12 +9,19 @@ const requiredPaths = [
   "src/lib/processing/types.ts",
   "src/lib/processing/client.ts",
   "src/lib/processing/worker-client.ts",
+  "src/lib/storage/types.ts",
+  "src/lib/storage/config.ts",
+  "src/lib/storage/storage-adapter.ts",
   "src/lib/db/mongodb.ts",
   "src/lib/db/processing-jobs.ts",
+  "src/lib/db/authorized-footage.ts",
   "src/app/api/processing/jobs/route.ts",
   "src/app/api/processing/jobs/[id]/route.ts",
   "src/app/api/processing/config/route.ts",
   "src/app/api/processing/worker-health/route.ts",
+  "src/app/api/authorized-footage/intakes/route.ts",
+  "src/app/api/authorized-footage/intakes/[id]/route.ts",
+  "src/app/api/authorized-footage/presign-upload/route.ts",
   "services/ai-worker/README.md",
   "services/ai-worker/main.py",
   "services/ai-worker/app/frame_extractor.py",
@@ -23,6 +30,7 @@ const requiredPaths = [
   "services/ai-worker/app/schemas.py",
   "services/ai-worker/app/config.py",
   "docs/real-pilot-requirements.md",
+  "docs/authorized-footage-intake.md",
 ];
 
 const missing = requiredPaths.filter((relativePath) => !existsSync(resolve(root, relativePath)));
@@ -37,7 +45,7 @@ const envExample = execSync("pwsh -NoProfile -Command \"Get-Content '.env.exampl
   encoding: "utf8",
 });
 
-for (const requiredEnv of ["AI_PROCESSING_MODE", "MONGODB_URI"]) {
+for (const requiredEnv of ["AI_PROCESSING_MODE", "MONGODB_URI", "AUTHORIZED_UPLOADS_ENABLED"]) {
   if (!envExample.includes(requiredEnv)) {
     console.error(`.env.example is missing ${requiredEnv}`);
     process.exit(1);
@@ -72,6 +80,13 @@ if (!pilotDoc.includes("Phase 2A.1 processing job API")) {
 
 if (!pilotDoc.includes("Phase 2A.2 worker connector")) {
   console.error("docs/real-pilot-requirements.md is missing the Phase 2A.2 worker connector section");
+  process.exit(1);
+}
+
+if (!pilotDoc.includes("Phase 2A.3 authorized footage intake/storage scaffold")) {
+  console.error(
+    "docs/real-pilot-requirements.md is missing the Phase 2A.3 authorized footage intake/storage scaffold section",
+  );
   process.exit(1);
 }
 

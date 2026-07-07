@@ -29,7 +29,9 @@ export async function GET(_: Request, context: RouteContext) {
   const workerModeEnabled = isWorkerModeEnabled();
   const workerConfigured = isWorkerConfigured();
   const note =
-    job.sourceType === "uploaded_video"
+    job.sourceType === "authorized_pilot_clip"
+      ? "This job is linked to an authorized pilot footage intake scaffold. Real storage-backed processing still requires explicit upload and privacy controls."
+      : job.sourceType === "uploaded_video"
       ? "This is a metadata-only uploaded-video job in the public alpha. Real video execution still belongs in a separate worker service."
       : "This mock processing job represents the future worker flow using synthetic/public-safe demo inputs only.";
   const limitations = [

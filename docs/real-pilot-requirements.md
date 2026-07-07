@@ -186,3 +186,17 @@ For a real pilot, this is still not enough by itself. The project would still ne
 - a safe storage and retention design
 - stronger privacy masking and evidence handling
 - production queueing, monitoring, and access control
+
+## Phase 2A.3 authorized footage intake/storage scaffold
+
+The platform can now record **authorized footage intake metadata** for future pilot use.
+
+What this means:
+
+- intake metadata can be recorded now
+- a presigned upload route exists, but it is disabled by default
+- real uploads require explicit environment configuration
+- no public raw video storage is enabled
+- no live CCTV is enabled
+
+This keeps the public alpha safe while preparing the workflow needed for a controlled municipal pilot.

@@ -5,6 +5,7 @@ import {
   saveProcessingDetections,
   updateProcessingJob,
 } from "@/lib/db/processing-jobs";
+import { getAuthorizedFootageIntake } from "@/lib/db/authorized-footage";
 import { runMockProcessingJob } from "@/lib/processing/mock";
 import {
   isWorkerConfigured,
@@ -42,12 +43,50 @@ export async function POST(request: Request) {
   const mode =
     requestedMode === "worker" && serverMode === "worker" && workerModeEnabled ? "worker" : "mock";
 
+  let authorizedIntake = null;
+  if (body.authorizedFootageIntakeId) {
+    authorizedIntake = await getAuthorizedFootageIntake(body.authorizedFootageIntakeId);
+    if (!authorizedIntake) {
+      return NextResponse.json(
+        { error: "Authorized footage intake not found for this processing job." },
+        { status: 400 },
+      );
+    }
+  }
+
+  if (sourceType === "authorized_pilot_clip") {
+    if (!authorizedIntake) {
+      return NextResponse.json(
+        {
+          error:
+            "authorized_pilot_clip jobs require an authorized footage intake record first.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (authorizedIntake.status !== "uploaded") {
+      return NextResponse.json(
+        {
+          error:
+            "Authorized footage intake must be marked uploaded before creating a pilot processing job.",
+        },
+        { status: 400 },
+      );
+    }
+  }
+
   const job = await createProcessingJob({
     sourceType,
     videoName: body.videoName,
     demoId: body.demoId,
+    authorizedFootageIntakeId: body.authorizedFootageIntakeId,
+    storageObjectKey: body.storageObjectKey ?? authorizedIntake?.storageObjectKey,
     locationLabel: body.locationLabel,
     selectedScenario: body.selectedScenario,
+    privacyMaskingRequired:
+      body.privacyMaskingRequired ?? authorizedIntake?.privacyMaskingRequired,
+    retentionDays: body.retentionDays ?? authorizedIntake?.retentionDays,
     mode,
     requestedMode,
   });

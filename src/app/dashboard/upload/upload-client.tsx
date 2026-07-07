@@ -35,6 +35,11 @@ import {
   type ProcessingMode,
   type WorkerHealthResponse,
 } from "@/lib/processing/types";
+import type {
+  AuthorizedFootageIntake,
+  AuthorizedFootageSourceType,
+  PresignedUploadResponse,
+} from "@/lib/storage/types";
 import { useEventStore } from "@/lib/data/event-store";
 import type { ProcessingStage } from "@/types";
 import { DISCLAIMER, DEMO_DATA_NOTICE } from "@/lib/constants";
@@ -60,6 +65,9 @@ type ProcessingConfig = {
   workerConfigured: boolean;
   workerModeEnabled?: boolean;
   mongoConfigured: boolean;
+  authorizedUploadsEnabled?: boolean;
+  storageProvider?: string;
+  maxAuthorizedVideoUploadMb?: number;
   publicLimitations: string[];
 };
 
@@ -67,6 +75,21 @@ type SelectedFileMeta = {
   name: string;
   size: number;
   type: string;
+};
+
+type IntakeDraft = {
+  title: string;
+  locationLabel: string;
+  sourceType: AuthorizedFootageSourceType;
+  jurisdiction: string;
+  authorizationContact: string;
+  authorizationReference: string;
+  notes: string;
+  retentionDays: number;
+  writtenAuthorizationAvailable: boolean;
+  faceBlurRequired: boolean;
+  plateMaskingRequired: boolean;
+  humanReviewRequired: boolean;
 };
 
 function getReachedStages(job: ProcessingJob): ProcessingJob["status"][] {
@@ -125,6 +148,25 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
   const [jobLoading, setJobLoading] = useState(false);
   const [workerHealth, setWorkerHealth] = useState<WorkerHealthResponse | null>(null);
   const [workerHealthLoading, setWorkerHealthLoading] = useState(false);
+  const [intakeDraft, setIntakeDraft] = useState<IntakeDraft>({
+    title: "",
+    locationLabel: "",
+    sourceType: "municipal_uploaded_clip",
+    jurisdiction: "",
+    authorizationContact: "",
+    authorizationReference: "",
+    notes: "",
+    retentionDays: 30,
+    writtenAuthorizationAvailable: false,
+    faceBlurRequired: true,
+    plateMaskingRequired: true,
+    humanReviewRequired: true,
+  });
+  const [authorizedIntake, setAuthorizedIntake] = useState<AuthorizedFootageIntake | null>(null);
+  const [authorizedUploadFile, setAuthorizedUploadFile] = useState<SelectedFileMeta | null>(null);
+  const [presignResponse, setPresignResponse] = useState<PresignedUploadResponse | null>(null);
+  const [intakeLoading, setIntakeLoading] = useState(false);
+  const [presignLoading, setPresignLoading] = useState(false);
   const syntheticDemos = getSyntheticUploadDemos();
 
   const demoParam = searchParams.get("demo");
@@ -346,6 +388,103 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
       toast.error(message);
     } finally {
       setWorkerHealthLoading(false);
+    }
+  }
+
+  function updateIntakeDraft<K extends keyof IntakeDraft>(key: K, value: IntakeDraft[K]) {
+    setIntakeDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  async function handleCreateAuthorizedIntake() {
+    setIntakeLoading(true);
+    setPresignResponse(null);
+    try {
+      const response = await fetch("/api/authorized-footage/intakes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: intakeDraft.title,
+          sourceType: intakeDraft.sourceType,
+          locationLabel: intakeDraft.locationLabel,
+          jurisdiction: intakeDraft.jurisdiction,
+          authorizationContact:
+            intakeDraft.authorizationContact ||
+            (intakeDraft.writtenAuthorizationAvailable ? "Written authorization on file" : ""),
+          authorizationReference: intakeDraft.authorizationReference || undefined,
+          notes: intakeDraft.notes || undefined,
+          retentionDays: intakeDraft.retentionDays,
+          privacyMaskingRequired: true,
+          plateMaskingRequired: intakeDraft.plateMaskingRequired,
+          faceBlurRequired: intakeDraft.faceBlurRequired,
+          humanReviewRequired: intakeDraft.humanReviewRequired,
+          status: intakeDraft.writtenAuthorizationAvailable
+            ? "authorized"
+            : "awaiting_authorization",
+        }),
+      });
+      const payload = (await response.json()) as
+        | { intake: AuthorizedFootageIntake; note?: string }
+        | { error: string };
+
+      if (!response.ok || !("intake" in payload)) {
+        throw new Error("error" in payload ? payload.error : "Failed to create authorized intake");
+      }
+
+      setAuthorizedIntake(payload.intake);
+      setPresignResponse(null);
+      toast.success(`Authorized intake ${payload.intake.id} created`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create authorized intake");
+    } finally {
+      setIntakeLoading(false);
+    }
+  }
+
+  async function handleRequestUploadUrl() {
+    if (!authorizedIntake) {
+      toast.error("Create an authorized footage intake first");
+      return;
+    }
+    if (!authorizedUploadFile) {
+      toast.error("Choose a local file to send metadata only");
+      return;
+    }
+
+    setPresignLoading(true);
+    try {
+      const response = await fetch("/api/authorized-footage/presign-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          intakeId: authorizedIntake.id,
+          fileName: authorizedUploadFile.name,
+          contentType: authorizedUploadFile.type,
+          fileSizeBytes: authorizedUploadFile.size,
+        }),
+      });
+      const payload = (await response.json()) as PresignedUploadResponse & { error?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Failed to request controlled upload URL");
+      }
+
+      setPresignResponse(payload);
+      if (payload.enabled) {
+        toast.success("Controlled upload URL issued");
+      } else {
+        toast.error(payload.message);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to request controlled upload URL";
+      toast.error(message);
+      setPresignResponse({
+        enabled: false,
+        limitations: [],
+        message,
+      });
+    } finally {
+      setPresignLoading(false);
     }
   }
 
@@ -668,6 +807,222 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
               ) : null}
               Check worker health
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base">Authorized footage intake — pilot scaffold</CardTitle>
+          <CardDescription>
+            Real video upload is disabled in the public alpha. For a controlled municipal pilot,
+            authorized footage intake will require written permission, storage configuration,
+            privacy masking, retention limits, and human review.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <Alert>
+            <Info className="size-4" />
+            <AlertDescription>
+              No public video upload is enabled. Authorized pilot footage only. No live CCTV/RTSP.
+              No facial recognition. Privacy masking must happen before evidence persistence.
+            </AlertDescription>
+          </Alert>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="grid gap-1 text-sm">
+              <span className="font-medium">Title</span>
+              <input
+                className="rounded-md border bg-background px-3 py-2"
+                value={intakeDraft.title}
+                onChange={(e) => updateIntakeDraft("title", e.target.value)}
+                placeholder="Barasat pilot clip batch"
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="font-medium">Location / road / junction</span>
+              <input
+                className="rounded-md border bg-background px-3 py-2"
+                value={intakeDraft.locationLabel}
+                onChange={(e) => updateIntakeDraft("locationLabel", e.target.value)}
+                placeholder="Station Road and Colony More"
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="font-medium">Source type</span>
+              <select
+                className="rounded-md border bg-background px-3 py-2"
+                value={intakeDraft.sourceType}
+                onChange={(e) =>
+                  updateIntakeDraft("sourceType", e.target.value as AuthorizedFootageSourceType)
+                }
+              >
+                <option value="municipal_uploaded_clip">Municipal uploaded clip</option>
+                <option value="traffic_department_clip">Traffic department clip</option>
+                <option value="ward_office_clip">Ward office clip</option>
+                <option value="synthetic_demo">Synthetic demo</option>
+                <option value="external_dataset_reference">External dataset reference</option>
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="font-medium">Jurisdiction / department</span>
+              <input
+                className="rounded-md border bg-background px-3 py-2"
+                value={intakeDraft.jurisdiction}
+                onChange={(e) => updateIntakeDraft("jurisdiction", e.target.value)}
+                placeholder="Barasat Municipality"
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="font-medium">Authorization contact / reference</span>
+              <input
+                className="rounded-md border bg-background px-3 py-2"
+                value={intakeDraft.authorizationContact}
+                onChange={(e) => updateIntakeDraft("authorizationContact", e.target.value)}
+                placeholder="Nodal officer / written permission reference"
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="font-medium">Retention days</span>
+              <input
+                type="number"
+                min={1}
+                className="rounded-md border bg-background px-3 py-2"
+                value={intakeDraft.retentionDays}
+                onChange={(e) =>
+                  updateIntakeDraft("retentionDays", Math.max(1, Number(e.target.value) || 30))
+                }
+              />
+            </label>
+          </div>
+
+          <label className="grid gap-1 text-sm">
+            <span className="font-medium">Notes</span>
+            <textarea
+              className="min-h-24 rounded-md border bg-background px-3 py-2"
+              value={intakeDraft.notes}
+              onChange={(e) => updateIntakeDraft("notes", e.target.value)}
+              placeholder="Permission scope, corridor, privacy constraints, or pilot notes"
+            />
+          </label>
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={intakeDraft.writtenAuthorizationAvailable}
+                onChange={(e) =>
+                  updateIntakeDraft("writtenAuthorizationAvailable", e.target.checked)
+                }
+              />
+              Written authorization available
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={intakeDraft.faceBlurRequired}
+                onChange={(e) => updateIntakeDraft("faceBlurRequired", e.target.checked)}
+              />
+              Face blur required
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={intakeDraft.plateMaskingRequired}
+                onChange={(e) => updateIntakeDraft("plateMaskingRequired", e.target.checked)}
+              />
+              Plate masking required
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={intakeDraft.humanReviewRequired}
+                onChange={(e) => updateIntakeDraft("humanReviewRequired", e.target.checked)}
+              />
+              Human review required
+            </label>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={handleCreateAuthorizedIntake} disabled={intakeLoading}>
+              {intakeLoading ? <Loader2 className="size-4 animate-spin" data-icon="inline-start" /> : null}
+              Create authorized footage intake
+            </Button>
+            <Badge variant="outline">
+              Public uploads enabled: {processingConfig?.authorizedUploadsEnabled ? "yes" : "no"}
+            </Badge>
+            <Badge variant="outline">
+              Storage provider: {processingConfig?.storageProvider ?? "disabled"}
+            </Badge>
+          </div>
+
+          {authorizedIntake ? (
+            <div className="rounded-lg border bg-muted/10 p-4 text-sm">
+              <p><span className="font-medium">Intake ID:</span> {authorizedIntake.id}</p>
+              <p><span className="font-medium">Status:</span> {authorizedIntake.status}</p>
+              <p><span className="font-medium">Retention:</span> {authorizedIntake.retentionDays} days</p>
+              <p><span className="font-medium">Privacy masking:</span> {authorizedIntake.privacyMaskingRequired ? "required" : "not set"}</p>
+            </div>
+          ) : null}
+
+          <div className="rounded-lg border p-4">
+            <p className="font-medium">Controlled upload URL request</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Choose a file to capture metadata only, then request a controlled upload URL. This
+              does not upload bytes by default.
+            </p>
+            <input
+              type="file"
+              accept="video/*"
+              className="mt-3 block w-full text-sm"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                setAuthorizedUploadFile(
+                  file
+                    ? { name: file.name, size: file.size, type: file.type }
+                    : null,
+                );
+              }}
+            />
+            {authorizedUploadFile ? (
+              <div className="mt-3 rounded-lg bg-muted/20 p-3 text-sm text-muted-foreground">
+                <p><span className="font-medium text-foreground">File:</span> {authorizedUploadFile.name}</p>
+                <p><span className="font-medium text-foreground">Type:</span> {authorizedUploadFile.type}</p>
+                <p><span className="font-medium text-foreground">Size:</span> {(authorizedUploadFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+              </div>
+            ) : null}
+            <div className="mt-3">
+              <Button
+                variant="outline"
+                onClick={handleRequestUploadUrl}
+                disabled={!authorizedIntake || !authorizedUploadFile || presignLoading}
+              >
+                {presignLoading ? <Loader2 className="size-4 animate-spin" data-icon="inline-start" /> : null}
+                Request controlled upload URL
+              </Button>
+            </div>
+            {presignResponse ? (
+              <div className="mt-3 rounded-lg border bg-muted/10 p-3 text-sm">
+                <p className="font-medium">{presignResponse.message}</p>
+                {presignResponse.objectKey ? (
+                  <p className="mt-1 text-muted-foreground">
+                    Proposed object key: {presignResponse.objectKey}
+                  </p>
+                ) : null}
+                {presignResponse.uploadUrl ? (
+                  <p className="mt-1 break-all text-muted-foreground">
+                    Upload URL: {presignResponse.uploadUrl}
+                  </p>
+                ) : null}
+                {presignResponse.limitations.length > 0 ? (
+                  <ul className="mt-2 list-disc pl-5 text-muted-foreground">
+                    {presignResponse.limitations.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </CardContent>
       </Card>

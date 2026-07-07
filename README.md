@@ -285,6 +285,7 @@ What was added in this foundation layer:
 - feature-flagged connector to the separate Python worker scaffold for demo jobs
 - a separate Python worker scaffold for future FFmpeg/OpenCV processing
 - privacy-masking scaffold for faces and number plates before evidence persistence
+- authorized footage intake/storage scaffold added; public uploads remain disabled by default
 
 What is **still planned**, not shipped:
 
