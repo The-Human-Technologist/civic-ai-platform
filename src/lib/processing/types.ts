@@ -101,7 +101,23 @@ export interface ProcessingJobResponse {
   detections?: ProcessingDetection[];
   mode?: ProcessingMode;
   note?: string;
+  workerModeEnabled?: boolean;
+  workerConfigured?: boolean;
+  limitations?: string[];
   eventCount?: number;
   framesAnalyzed?: number;
   processingMs?: number;
+}
+
+export interface WorkerHealthResponse {
+  workerModeEnabled: boolean;
+  workerConfigured: boolean;
+  online: boolean;
+  health?: {
+    ok: boolean;
+    service: string;
+    mode: string;
+    realInferenceEnabled: boolean;
+  };
+  error?: string;
 }

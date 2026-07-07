@@ -6,7 +6,6 @@ from app.config import settings
 from app.detectors import DetectorContext, MockCivicDetector
 from app.schemas import (
     DemoJobRequest,
-    ProcessingJobModel,
     VideoJobRequest,
     WorkerJobResponse,
 )
@@ -26,8 +25,9 @@ def now_iso() -> str:
 def health():
     return {
         "ok": True,
-        "mode": settings.ai_processing_mode,
-        "note": "Worker scaffold only. No real model downloads, RTSP ingest, or automatic enforcement.",
+        "service": "civic-ai-worker",
+        "mode": "scaffold",
+        "realInferenceEnabled": False,
     }
 
 
@@ -37,39 +37,34 @@ def process_demo_job(payload: DemoJobRequest):
     detections = detector.detect(
         DetectorContext(job_id=payload.jobId, video_name=payload.videoName, demo_id=payload.demoId)
     )
-    job = ProcessingJobModel(
-        id=payload.jobId,
-        sourceType="synthetic_demo",
+    return WorkerJobResponse(
+        jobId=payload.jobId,
         status="completed",
         progress=100,
-        createdAt=now_iso(),
-        updatedAt=now_iso(),
-        videoName=payload.videoName,
-        demoId=payload.demoId,
-        mode="mock",
-    )
-    return WorkerJobResponse(
-        job=job,
         detections=detections,
-        note="Mock detector only. This endpoint exists to prove worker/frontend handoff without claiming real AI is shipped.",
+        limitations=[
+            "mock detector only",
+            "no real CV inference",
+            "no real video processing",
+            "no CCTV/RTSP",
+        ],
+        note="Mock detector only. This endpoint proves worker/frontend handoff without claiming real AI is shipped.",
     )
 
 
 @app.post("/process-video-job", response_model=WorkerJobResponse)
 def process_video_job(payload: VideoJobRequest):
-    job = ProcessingJobModel(
-        id=payload.jobId,
-        sourceType=payload.sourceType,
+    return WorkerJobResponse(
+        jobId=payload.jobId,
         status="failed",
         progress=5,
-        createdAt=now_iso(),
-        updatedAt=now_iso(),
-        videoName=payload.videoName,
-        mode="worker",
-        error="Scaffold only: real uploaded-video processing is not implemented in Phase 2A.",
-    )
-    return WorkerJobResponse(
-        job=job,
         detections=[],
-        note="Dev-only scaffold. Use authorized uploaded clips only after FFmpeg/OpenCV and privacy masking are fully implemented.",
+        limitations=[
+            "metadata only",
+            "no real video bytes accepted",
+            "no real CV inference",
+            "no CCTV/RTSP",
+        ],
+        note="Real uploaded-video processing is not implemented yet. This endpoint currently accepts metadata only.",
+        error="Real uploaded-video processing is not implemented yet. Metadata-only scaffold response returned.",
     )

@@ -167,3 +167,22 @@ frontend upload page
 ```
 
 That workflow is now scaffolded, but not yet production-ready.
+
+## Phase 2A.2 worker connector
+
+The Next.js API can now call the separate Python worker when worker mode is **explicitly enabled**.
+
+What this means:
+
+- mock mode remains the default and safest public path
+- synthetic demo jobs can be routed through the worker scaffold
+- uploaded-video jobs still use **metadata only**
+- real uploaded-video byte processing is still not implemented
+- live CCTV and RTSP remain out of scope
+
+For a real pilot, this is still not enough by itself. The project would still need:
+
+- authorized uploaded footage only
+- a safe storage and retention design
+- stronger privacy masking and evidence handling
+- production queueing, monitoring, and access control

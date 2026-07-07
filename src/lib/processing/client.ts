@@ -2,6 +2,7 @@ import type {
   CreateProcessingJobRequest,
   ProcessingJobResponse,
   ProcessingJobsListResponse,
+  WorkerHealthResponse,
 } from "@/lib/processing/types";
 
 async function readJson<T>(response: Response): Promise<T> {
@@ -41,6 +42,14 @@ export async function listProcessingJobs(): Promise<ProcessingJobsListResponse> 
     cache: "no-store",
   });
   return readJson<ProcessingJobsListResponse>(response);
+}
+
+export async function getWorkerHealth(): Promise<WorkerHealthResponse> {
+  const response = await fetch("/api/processing/worker-health", {
+    method: "GET",
+    cache: "no-store",
+  });
+  return readJson<WorkerHealthResponse>(response);
 }
 
 export async function pollProcessingJob(

@@ -282,6 +282,7 @@ What was added in this foundation layer:
 - optional MongoDB-backed job persistence with an in-memory demo fallback
 - Vercel-safe processing job API scaffolding
 - upload-page job creation/polling for mock and metadata-only flows
+- feature-flagged connector to the separate Python worker scaffold for demo jobs
 - a separate Python worker scaffold for future FFmpeg/OpenCV processing
 - privacy-masking scaffold for faces and number plates before evidence persistence
 

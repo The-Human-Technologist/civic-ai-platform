@@ -4,6 +4,7 @@ import {
   listProcessingDetections,
   updateProcessingJob,
 } from "@/lib/db/processing-jobs";
+import { isWorkerConfigured, isWorkerModeEnabled } from "@/lib/processing/worker-client";
 import type { ProcessingJobStatus } from "@/lib/processing/types";
 
 type RouteContext = {
@@ -25,15 +26,26 @@ export async function GET(_: Request, context: RouteContext) {
   }
 
   const detections = await listProcessingDetections(id);
+  const workerModeEnabled = isWorkerModeEnabled();
+  const workerConfigured = isWorkerConfigured();
   const note =
     job.sourceType === "uploaded_video"
       ? "This is a metadata-only uploaded-video job in the public alpha. Real video execution still belongs in a separate worker service."
       : "This mock processing job represents the future worker flow using synthetic/public-safe demo inputs only.";
+  const limitations = [
+    "Mock mode remains the safe default.",
+    "Real video byte upload is still disabled.",
+    "Live CCTV and RTSP remain out of scope.",
+    "Human review remains required.",
+  ];
 
   return NextResponse.json({
     job,
     detections,
     note,
+    workerModeEnabled,
+    workerConfigured,
+    limitations,
   });
 }
 

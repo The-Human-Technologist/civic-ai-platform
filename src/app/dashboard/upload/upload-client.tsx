@@ -25,6 +25,7 @@ import { processVideoMock, simulateUploadProgress } from "@/lib/mock-ai/processo
 import {
   createProcessingJob,
   getProcessingJob,
+  getWorkerHealth,
   pollProcessingJob,
 } from "@/lib/processing/client";
 import {
@@ -32,6 +33,7 @@ import {
   type ProcessingDetection,
   type ProcessingJob,
   type ProcessingMode,
+  type WorkerHealthResponse,
 } from "@/lib/processing/types";
 import { useEventStore } from "@/lib/data/event-store";
 import type { ProcessingStage } from "@/types";
@@ -56,6 +58,7 @@ const STAGE_LABELS: Record<ProcessingStage, string> = {
 type ProcessingConfig = {
   aiProcessingMode: ProcessingMode;
   workerConfigured: boolean;
+  workerModeEnabled?: boolean;
   mongoConfigured: boolean;
   publicLimitations: string[];
 };
@@ -65,6 +68,19 @@ type SelectedFileMeta = {
   size: number;
   type: string;
 };
+
+function getReachedStages(job: ProcessingJob): ProcessingJob["status"][] {
+  if (job.status === "failed") {
+    if (job.progress >= 90) return ["queued", "extracting_frames", "masking_privacy", "running_detection", "saving_results"];
+    if (job.progress >= 70) return ["queued", "extracting_frames", "masking_privacy", "running_detection"];
+    if (job.progress >= 40) return ["queued", "extracting_frames", "masking_privacy"];
+    if (job.progress >= 20) return ["queued", "extracting_frames"];
+    return ["queued"];
+  }
+
+  const currentIndex = PROCESSING_JOB_STATUSES.indexOf(job.status);
+  return PROCESSING_JOB_STATUSES.slice(0, currentIndex);
+}
 
 function UploadPageFallback() {
   return (
@@ -107,6 +123,8 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
   const [jobNote, setJobNote] = useState<string | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
   const [jobLoading, setJobLoading] = useState(false);
+  const [workerHealth, setWorkerHealth] = useState<WorkerHealthResponse | null>(null);
+  const [workerHealthLoading, setWorkerHealthLoading] = useState(false);
   const syntheticDemos = getSyntheticUploadDemos();
 
   const demoParam = searchParams.get("demo");
@@ -228,6 +246,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
 
     setJobLoading(true);
     setJobError(null);
+    setLastResult(null);
     try {
       const created = await createProcessingJob({
         sourceType: "synthetic_demo",
@@ -235,7 +254,10 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         videoName: preselectedDemo.title,
         locationLabel: preselectedDemo.locationLabel,
         selectedScenario: preselectedDemo.useCase,
-        requestedMode: "mock",
+        requestedMode:
+          processingConfig?.aiProcessingMode === "worker" && processingConfig.workerModeEnabled
+            ? "worker"
+            : "mock",
       });
       setActiveJob(created.job);
       setJobDetections(created.detections ?? []);
@@ -267,9 +289,10 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
 
     setJobLoading(true);
     setJobError(null);
+    setLastResult(null);
     try {
       const requestedMode: ProcessingMode =
-        processingConfig?.aiProcessingMode === "worker" && processingConfig.workerConfigured
+        processingConfig?.aiProcessingMode === "worker" && processingConfig.workerModeEnabled
           ? "worker"
           : "mock";
 
@@ -299,6 +322,30 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
       toast.error(message);
     } finally {
       setJobLoading(false);
+    }
+  }
+
+  async function handleCheckWorkerHealth() {
+    setWorkerHealthLoading(true);
+    try {
+      const health = await getWorkerHealth();
+      setWorkerHealth(health);
+      if (health.online) {
+        toast.success("Worker health check succeeded");
+      } else {
+        toast.error(health.error ?? "Worker is offline");
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Worker health check failed";
+      setWorkerHealth({
+        workerModeEnabled: false,
+        workerConfigured: false,
+        online: false,
+        error: message,
+      });
+      toast.error(message);
+    } finally {
+      setWorkerHealthLoading(false);
     }
   }
 
@@ -494,9 +541,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
                     <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                       {PROCESSING_JOB_STATUSES.map((statusName) => {
                         const isActive = activeJob.status === statusName;
-                        const isDone =
-                          PROCESSING_JOB_STATUSES.indexOf(statusName) <
-                          PROCESSING_JOB_STATUSES.indexOf(activeJob.status);
+                        const isDone = getReachedStages(activeJob).includes(statusName);
                         return (
                           <div
                             key={statusName}
@@ -538,6 +583,92 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base">Worker mode status</CardTitle>
+          <CardDescription>
+            Worker routing is feature-flagged. Mock mode remains the safe default, and real video
+            upload stays disabled in the public alpha.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border bg-muted/10 p-3 text-sm">
+              <p>
+                <span className="font-medium">Current mode:</span>{" "}
+                {processingConfig?.aiProcessingMode ?? "mock"}
+              </p>
+              <p>
+                <span className="font-medium">Worker URL configured:</span>{" "}
+                {processingConfig?.workerConfigured ? "yes" : "no"}
+              </p>
+              <p>
+                <span className="font-medium">Real video upload:</span> disabled in public alpha
+              </p>
+              <p>
+                <span className="font-medium">Real inference:</span> not enabled yet
+              </p>
+            </div>
+            <div className="rounded-lg border bg-muted/10 p-3 text-sm">
+              <p>
+                <span className="font-medium">Worker health:</span>{" "}
+                {workerHealthLoading
+                  ? "checking"
+                  : workerHealth
+                    ? workerHealth.online
+                      ? "online"
+                      : "offline"
+                    : "not checked"}
+              </p>
+              {workerHealth?.error ? (
+                <p className="mt-1 text-destructive">{workerHealth.error}</p>
+              ) : null}
+              {workerHealth?.health ? (
+                <p className="mt-1 text-muted-foreground">
+                  {workerHealth.health.service} · mode {workerHealth.health.mode} · real inference{" "}
+                  {workerHealth.health.realInferenceEnabled ? "enabled" : "disabled"}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          {processingConfig?.aiProcessingMode === "mock" ? (
+            <Alert>
+              <Info className="size-4" />
+              <AlertDescription>Public demo is running safely in mock mode.</AlertDescription>
+            </Alert>
+          ) : workerHealth?.online ? (
+            <Alert>
+              <Info className="size-4" />
+              <AlertDescription>
+                Worker connector is active for demo jobs. Real video bytes are still disabled.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert>
+              <Info className="size-4" />
+              <AlertDescription>
+                Worker mode is enabled but the worker may be offline. The public mock workflow
+                should remain usable.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div>
+            <Button
+              variant="outline"
+              onClick={handleCheckWorkerHealth}
+              disabled={workerHealthLoading}
+            >
+              {workerHealthLoading ? (
+                <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
+              ) : null}
+              Check worker health
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

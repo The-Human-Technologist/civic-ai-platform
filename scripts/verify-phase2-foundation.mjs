@@ -8,11 +8,13 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const requiredPaths = [
   "src/lib/processing/types.ts",
   "src/lib/processing/client.ts",
+  "src/lib/processing/worker-client.ts",
   "src/lib/db/mongodb.ts",
   "src/lib/db/processing-jobs.ts",
   "src/app/api/processing/jobs/route.ts",
   "src/app/api/processing/jobs/[id]/route.ts",
   "src/app/api/processing/config/route.ts",
+  "src/app/api/processing/worker-health/route.ts",
   "services/ai-worker/README.md",
   "services/ai-worker/main.py",
   "services/ai-worker/app/frame_extractor.py",
@@ -66,6 +68,26 @@ const pilotDoc = execSync(
 if (!pilotDoc.includes("Phase 2A.1 processing job API")) {
   console.error("docs/real-pilot-requirements.md is missing the Phase 2A.1 processing job API section");
   process.exit(1);
+}
+
+if (!pilotDoc.includes("Phase 2A.2 worker connector")) {
+  console.error("docs/real-pilot-requirements.md is missing the Phase 2A.2 worker connector section");
+  process.exit(1);
+}
+
+const workerMain = execSync(
+  "pwsh -NoProfile -Command \"Get-Content 'services/ai-worker/main.py'\"",
+  {
+    cwd: root,
+    encoding: "utf8",
+  },
+);
+
+for (const endpoint of ['"/health"', '"/process-demo-job"', '"/process-video-job"']) {
+  if (!workerMain.includes(endpoint)) {
+    console.error(`services/ai-worker/main.py is missing ${endpoint}`);
+    process.exit(1);
+  }
 }
 
 const trackedFiles = execSync("git ls-files", { cwd: root, encoding: "utf8" }).split(/\r?\n/);

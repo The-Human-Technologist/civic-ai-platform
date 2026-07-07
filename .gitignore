@@ -52,6 +52,9 @@ yarn-error.log*
 *.pt
 *.onnx
 *.engine
+services/ai-worker/.venv/
+__pycache__/
+*.pyc
 
 # allow data documentation and small demo placeholders
 !docs/data/**

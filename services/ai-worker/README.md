@@ -48,6 +48,22 @@ Then test:
 curl http://localhost:8000/health
 ```
 
+## Enable worker mode in Next.js
+
+Set these in `.env.local` for local testing:
+
+```bash
+AI_PROCESSING_MODE=worker
+AI_WORKER_URL=http://localhost:8000
+```
+
+The frontend can then create processing jobs that call the worker scaffold for synthetic demos.
+Uploaded-video jobs still send metadata only.
+
+## Warning
+
+Worker scaffold returns **mock detections only**. No model weights or real CV inference are bundled in this repository.
+
 ## Privacy-first rule
 
 Future real pilot processing must follow this order:

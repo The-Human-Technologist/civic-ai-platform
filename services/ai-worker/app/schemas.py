@@ -44,6 +44,8 @@ class ProcessingJobModel(BaseModel):
     updatedAt: str
     videoName: Optional[str] = None
     demoId: Optional[str] = None
+    locationLabel: Optional[str] = None
+    selectedScenario: Optional[str] = None
     mode: ProcessingMode
     error: Optional[str] = None
 
@@ -64,16 +66,24 @@ class ProcessingDetectionModel(BaseModel):
 class DemoJobRequest(BaseModel):
     jobId: str
     demoId: Optional[str] = None
+    sourceType: ProcessingSourceType = "synthetic_demo"
     videoName: Optional[str] = None
+    locationLabel: Optional[str] = None
 
 
 class VideoJobRequest(BaseModel):
     jobId: str
     videoName: str
     sourceType: ProcessingSourceType = "uploaded_video"
+    locationLabel: Optional[str] = None
+    selectedScenario: Optional[str] = None
 
 
 class WorkerJobResponse(BaseModel):
-    job: ProcessingJobModel
+    jobId: str
+    status: ProcessingJobStatus
+    progress: int = Field(ge=0, le=100)
     detections: list[ProcessingDetectionModel] = []
+    limitations: list[str] = []
     note: str
+    error: Optional[str] = None
