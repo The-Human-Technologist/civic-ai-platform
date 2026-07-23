@@ -51,7 +51,7 @@ export default function PilotProposalPage() {
         </div>
       </div>
 
-      <article className="mx-auto max-w-4xl flex-1 px-4 py-10 sm:px-6 print:max-w-none">
+      <article className="mx-auto w-full min-w-0 max-w-4xl flex-1 px-4 py-10 sm:px-6 print:max-w-none">
         <Alert className="mb-10">
           <Shield className="size-4" />
           <AlertTitle>Advisory intelligence — not automated enforcement</AlertTitle>

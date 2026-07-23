@@ -56,6 +56,8 @@ export interface ProcessingJob {
   mode: ProcessingMode;
   requestedMode?: ProcessingMode;
   error?: string;
+  completedAt?: string;
+  failedAt?: string;
 }
 
 export interface ProcessingDetection {

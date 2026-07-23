@@ -75,6 +75,10 @@ export default function EventReviewPage({
       confidence: event!.confidence,
       description: event!.description,
       recommendedAction: event!.recommendedAction,
+      source: event!.source,
+      processingJobId: event!.processingJobId,
+      frameTimestampSec: event!.frameTimestampSec,
+      privacyMasked: event!.privacyMasked,
       disclaimer: DISCLAIMER,
       exportedAt: new Date().toISOString(),
     };
@@ -148,6 +152,16 @@ export default function EventReviewPage({
                 {event.location.lat.toFixed(4)}, {event.location.lng.toFixed(4)}
               </p>
             </div>
+            {event.processingJobId ? (
+              <div className="sm:col-span-2">
+                <p className="text-xs font-medium text-muted-foreground">Processing provenance</p>
+                <p className="mt-1 break-all font-mono text-xs">Job {event.processingJobId}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Frame {event.frameTimestampSec ?? 0}s · Privacy-masked output:{" "}
+                  {event.privacyMasked ? "yes" : "no"}
+                </p>
+              </div>
+            ) : null}
           </div>
 
           <Separator />
@@ -176,7 +190,7 @@ export default function EventReviewPage({
             <Video className="size-12" />
             <p className="text-sm">{event.evidenceLabel ?? "Evidence clip unavailable"}</p>
             <p className="text-xs text-slate-500">
-              Face blurring &amp; plate masking applied on export (planned)
+              No real evidence media is bundled. Masking is mandatory before future persistence.
             </p>
           </div>
         </CardContent>

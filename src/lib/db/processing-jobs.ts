@@ -5,6 +5,7 @@ import type {
   ProcessingDetection,
   ProcessingJob,
 } from "@/lib/processing/types";
+import { isProcessingStatusTransitionAllowed } from "@/lib/processing/state";
 
 const JOBS_COLLECTION = "processing_jobs";
 const DETECTIONS_COLLECTION = "processing_detections";
@@ -87,10 +88,18 @@ export async function updateProcessingJob(
   const existing = await getProcessingJob(id);
   if (!existing) return null;
 
+  if (patch.status && !isProcessingStatusTransitionAllowed(existing.status, patch.status)) {
+    throw new Error(`Invalid processing status transition: ${existing.status} -> ${patch.status}`);
+  }
+
+  const timestamp = nowIso();
+
   const nextJob: ProcessingJob = {
     ...existing,
     ...patch,
-    updatedAt: nowIso(),
+    updatedAt: timestamp,
+    completedAt: patch.status === "completed" ? timestamp : existing.completedAt,
+    failedAt: patch.status === "failed" ? timestamp : existing.failedAt,
   };
 
   if (shouldUseInMemoryStore()) {

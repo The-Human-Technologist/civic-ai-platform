@@ -6,6 +6,7 @@ import {
 } from "@/lib/db/processing-jobs";
 import { isWorkerConfigured, isWorkerModeEnabled } from "@/lib/processing/worker-client";
 import type { ProcessingJobStatus } from "@/lib/processing/types";
+import { PROCESSING_JOB_STATUSES } from "@/lib/processing/types";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -52,14 +53,40 @@ export async function GET(_: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
+  if (process.env.ALLOW_DEV_JOB_MUTATIONS !== "true") {
+    return NextResponse.json(
+      { error: "Direct job mutations are disabled. Worker-controlled status updates are required." },
+      { status: 403 },
+    );
+  }
+
   const { id } = await context.params;
   const body = (await request.json().catch(() => ({}))) as PatchPayload;
 
-  const job = await updateProcessingJob(id, {
-    status: body.status,
-    progress: body.progress,
-    error: body.error,
-  });
+  if (body.status && !PROCESSING_JOB_STATUSES.includes(body.status)) {
+    return NextResponse.json({ error: "Invalid processing job status." }, { status: 400 });
+  }
+  if (
+    body.progress !== undefined &&
+    (!Number.isFinite(body.progress) || body.progress < 0 || body.progress > 100)
+  ) {
+    return NextResponse.json({ error: "progress must be between 0 and 100." }, { status: 400 });
+  }
+
+  const patch: PatchPayload = {};
+  if (body.status !== undefined) patch.status = body.status;
+  if (body.progress !== undefined) patch.progress = body.progress;
+  if (typeof body.error === "string") patch.error = body.error.slice(0, 1000);
+
+  let job;
+  try {
+    job = await updateProcessingJob(id, patch);
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid job update." },
+      { status: 400 },
+    );
+  }
 
   if (!job) {
     return NextResponse.json({ error: "Processing job not found" }, { status: 404 });

@@ -4,7 +4,8 @@
  * Uses `git ls-files` so local gitignored `data/` scaffolds do not fail the check.
  * Run: npm run verify:footage
  */
-const { execSync } = require("node:child_process");
+const { execFileSync } = require("node:child_process");
+const { readdirSync } = require("node:fs");
 const path = require("node:path");
 
 const FORBIDDEN_EXTENSIONS = new Set([
@@ -36,7 +37,10 @@ const PLACEHOLDER_ALLOWLIST = new Set([
 
 function getTrackedFiles() {
   try {
-    const out = execSync("git ls-files", { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] });
+    const out = execFileSync("git", ["ls-files"], {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    });
     return out
       .split(/\r?\n/)
       .map((line) => line.replace(/\\/g, "/").trim())
@@ -44,6 +48,18 @@ function getTrackedFiles() {
   } catch {
     return null;
   }
+}
+
+function getFallbackFiles(directory, root = directory) {
+  const excluded = new Set([".git", ".next", ".vercel", "node_modules", ".venv", "venv"]);
+  const files = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (excluded.has(entry.name)) continue;
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...getFallbackFiles(absolute, root));
+    else files.push(path.relative(root, absolute).replace(/\\/g, "/"));
+  }
+  return files;
 }
 
 function isForbiddenFile(relPath) {
@@ -77,11 +93,11 @@ function isForbiddenFile(relPath) {
 }
 
 function main() {
-  const tracked = getTrackedFiles();
+  const gitTracked = getTrackedFiles();
+  const tracked = gitTracked ?? getFallbackFiles(process.cwd());
 
-  if (tracked === null) {
-    console.warn("Warning: git not available — skipping footage policy scan.");
-    process.exit(0);
+  if (gitTracked === null) {
+    console.warn("Warning: git process unavailable; using a conservative filesystem policy scan.");
   }
 
   const violations = tracked.filter(isForbiddenFile).sort();

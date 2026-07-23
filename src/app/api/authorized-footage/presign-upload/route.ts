@@ -30,12 +30,22 @@ export async function POST(request: Request) {
     );
   }
 
+  if (intake.status !== "authorized") {
+    return NextResponse.json(
+      { error: `Upload URL cannot be issued while intake is ${intake.status}; written authorization is required first.` },
+      { status: 400 },
+    );
+  }
+
   if (
-    intake.status !== "authorized" &&
-    intake.status !== "awaiting_authorization"
+    !intake.authorizationReference ||
+    !intake.privacyMaskingRequired ||
+    !intake.faceBlurRequired ||
+    !intake.plateMaskingRequired ||
+    !intake.humanReviewRequired
   ) {
     return NextResponse.json(
-      { error: `Upload URL cannot be issued while intake is ${intake.status}.` },
+      { error: "Authorization reference and all privacy/human-review controls are required." },
       { status: 400 },
     );
   }
@@ -53,10 +63,7 @@ export async function POST(request: Request) {
     fileSizeBytes: body.fileSizeBytes,
     contentType: body.contentType,
     storageObjectKey: response.objectKey ?? intake.storageObjectKey,
-    notes:
-      intake.status === "awaiting_authorization"
-        ? `${intake.notes ? `${intake.notes}\n` : ""}Dev warning: upload URL requested before formal authorization was marked complete.`
-        : intake.notes,
+    notes: intake.notes,
   });
 
   return NextResponse.json(response);

@@ -23,21 +23,23 @@ const PRIVACY_CONTROLS = [
   },
   {
     id: "plate",
-    label: "Number plate masking",
-    desc: "Mask plates in non-enforcement / advisory mode",
+    label: "Number plate masking (pilot requirement)",
+    desc: "Locked on for future authorized-footage evidence",
     key: "numberPlateMasking" as const,
+    disabled: true,
   },
   {
     id: "audit",
-    label: "Audit logs",
-    desc: "Log all review actions with timestamp and reviewer ID",
+    label: "Audit logs (planned)",
+    desc: "Demo review metadata is local; immutable server audit is not shipped",
     key: "auditLogsEnabled" as const,
   },
   {
     id: "human",
     label: "Human review required",
-    desc: "Block field dispatch until official confirms event",
+    desc: "Locked on: no external action without an official reviewer",
     key: "humanReviewRequired" as const,
+    disabled: true,
   },
   {
     id: "fr",
@@ -126,7 +128,7 @@ export default function SettingsPage() {
                 className="w-full max-w-[140px]"
               />
               <p className="text-xs text-muted-foreground">
-                Evidence clips auto-purged after retention window (production cron job)
+                Demo setting only. Production requires tested object-lifecycle deletion.
               </p>
             </div>
           </CardContent>

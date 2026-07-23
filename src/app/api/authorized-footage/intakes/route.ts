@@ -49,9 +49,31 @@ export async function POST(request: Request) {
     );
   }
 
+  if (
+    body.privacyMaskingRequired === false ||
+    body.faceBlurRequired === false ||
+    body.plateMaskingRequired === false ||
+    body.humanReviewRequired === false
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Privacy masking, face blur, plate masking, and human review are mandatory for authorized footage intake.",
+      },
+      { status: 400 },
+    );
+  }
+
   const retentionDays =
     typeof body.retentionDays === "number" && body.retentionDays > 0 ? body.retentionDays : 30;
   const status = body.status === "authorized" ? "authorized" : "awaiting_authorization";
+
+  if (status === "authorized" && !body.authorizationReference?.trim()) {
+    return NextResponse.json(
+      { error: "An authorization reference is required before an intake can be marked authorized." },
+      { status: 400 },
+    );
+  }
 
   const intake = await createAuthorizedFootageIntake({
     title: body.title,
@@ -62,12 +84,12 @@ export async function POST(request: Request) {
     authorizationReference: body.authorizationReference,
     authorizationDate: body.authorizationDate,
     retentionDays,
-    privacyMaskingRequired: body.privacyMaskingRequired ?? true,
-    plateMaskingRequired: body.plateMaskingRequired ?? true,
-    faceBlurRequired: body.faceBlurRequired ?? true,
+    privacyMaskingRequired: true,
+    plateMaskingRequired: true,
+    faceBlurRequired: true,
     status,
     notes: body.notes,
-    humanReviewRequired: body.humanReviewRequired ?? true,
+    humanReviewRequired: true,
   });
 
   return NextResponse.json(

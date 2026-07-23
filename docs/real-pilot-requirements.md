@@ -200,3 +200,22 @@ What this means:
 - no live CCTV is enabled
 
 This keeps the public alpha safe while preparing the workflow needed for a controlled municipal pilot.
+
+## Phase 2A.4 safety and review hardening
+
+The foundation now enforces several boundaries that were previously documentation-only:
+
+- completed processing-job detections are mapped into the existing human-review queue
+- repeated job results are de-duplicated before they are added to browser demo data
+- direct processing-job status mutation is disabled unless an explicit local-development flag is set
+- invalid job payloads and invalid status transitions are rejected
+- controlled upload URL requests require an authorized intake and a written authorization reference
+- face blur, number-plate masking, privacy masking, and human review cannot be switched off in intake creation
+- the worker includes guarded local-file frame extraction helpers and fail-closed privacy masking
+- verification scripts now run cross-platform and do not silently skip the footage policy when a child process is unavailable
+
+This still does **not** make the project production-ready. The worker does not accept public video
+bytes, no detector weights are bundled, privacy-region detection is not wired, authentication and
+server-side review audit logs are absent, and storage URL signing remains deliberately disabled.
+
+See [production-readiness.md](production-readiness.md) for the current gate-by-gate status.

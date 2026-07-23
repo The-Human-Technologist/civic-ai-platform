@@ -28,6 +28,7 @@ import {
   getWorkerHealth,
   pollProcessingJob,
 } from "@/lib/processing/client";
+import { processingDetectionsToReviewEvents } from "@/lib/processing/to-review-events";
 import {
   PROCESSING_JOB_STATUSES,
   type ProcessingDetection,
@@ -167,6 +168,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
   const [presignResponse, setPresignResponse] = useState<PresignedUploadResponse | null>(null);
   const [intakeLoading, setIntakeLoading] = useState(false);
   const [presignLoading, setPresignLoading] = useState(false);
+  const syncedReviewJobs = useRef(new Set<string>());
   const syntheticDemos = getSyntheticUploadDemos();
 
   const demoParam = searchParams.get("demo");
@@ -283,6 +285,20 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
     return result;
   }
 
+  function syncDetectionsToHumanReview(
+    job: ProcessingJob,
+    detections: ProcessingDetection[],
+  ) {
+    if (job.status !== "completed" || syncedReviewJobs.current.has(job.id)) return;
+
+    const reviewEvents = processingDetectionsToReviewEvents(job, detections);
+    if (reviewEvents.length === 0) return;
+
+    addEvents(reviewEvents);
+    syncedReviewJobs.current.add(job.id);
+    toast.success(`${reviewEvents.length} job detections added to human review`);
+  }
+
   async function handleCreateSyntheticJob() {
     if (!preselectedDemo) return;
 
@@ -313,6 +329,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
       setActiveJob(finalResult.job);
       setJobDetections(finalResult.detections ?? []);
       setJobNote(finalResult.note ?? created.note ?? null);
+      syncDetectionsToHumanReview(finalResult.job, finalResult.detections ?? []);
       toast.success(`Processing job ${finalResult.job.id} created`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to create processing job";
@@ -357,6 +374,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
       setActiveJob(finalResult.job);
       setJobDetections(finalResult.detections ?? []);
       setJobNote(finalResult.note ?? created.note ?? null);
+      syncDetectionsToHumanReview(finalResult.job, finalResult.detections ?? []);
       toast.success(`Metadata-only job ${finalResult.job.id} created`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to create metadata-only job";
@@ -521,9 +539,9 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         <CardHeader>
           <CardTitle className="text-base">Phase 2 real-processing foundation</CardTitle>
           <CardDescription>
-            The public demo uses mock AI by default. For a real pilot, authorized uploaded video
-            will be processed by a separate FFmpeg/OpenCV worker, stored in MongoDB,
-            privacy-masked, and sent to human review.
+            The public demo uses mock AI by default. Guarded frame-extraction and masking helpers
+            now exist, but real footage remains disabled until authenticated storage, evaluated
+            masking, queueing, and legal approval are in place.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm">
@@ -549,8 +567,8 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
             <Badge variant="secondary">Foundation added</Badge>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
-            <span>FFmpeg frame extraction</span>
-            <Badge variant="secondary">Scaffolded</Badge>
+            <span>FFmpeg/OpenCV frame extraction</span>
+            <Badge variant="secondary">Guarded local utility</Badge>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
             <span>YOLO/OpenCV inference</span>
@@ -558,7 +576,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
             <span>Face/plate masking</span>
-            <Badge variant="secondary">Scaffolded, production hardening planned</Badge>
+            <Badge variant="secondary">Fail-closed utility; detector wiring planned</Badge>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
             <span>Live CCTV/RTSP</span>
@@ -704,7 +722,10 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
 
           {jobDetections.length > 0 && (
             <div className="rounded-lg border p-4">
-              <p className="font-medium">Mock detections from job API</p>
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <p className="font-medium">Detections from job API</p>
+                <Badge variant="secondary">Added to human review when completed</Badge>
+              </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {jobDetections.map((detection) => (
                   <div key={detection.id} className="rounded-lg border bg-muted/10 p-3 text-sm">
@@ -874,12 +895,21 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
               />
             </label>
             <label className="grid gap-1 text-sm">
-              <span className="font-medium">Authorization contact / reference</span>
+              <span className="font-medium">Authorization contact</span>
               <input
                 className="rounded-md border bg-background px-3 py-2"
                 value={intakeDraft.authorizationContact}
                 onChange={(e) => updateIntakeDraft("authorizationContact", e.target.value)}
-                placeholder="Nodal officer / written permission reference"
+                placeholder="Nodal officer or department contact"
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="font-medium">Written authorization reference</span>
+              <input
+                className="rounded-md border bg-background px-3 py-2"
+                value={intakeDraft.authorizationReference}
+                onChange={(e) => updateIntakeDraft("authorizationReference", e.target.value)}
+                placeholder="Letter number / approval ID"
               />
             </label>
             <label className="grid gap-1 text-sm">
@@ -944,7 +974,17 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button onClick={handleCreateAuthorizedIntake} disabled={intakeLoading}>
+            <Button
+              onClick={handleCreateAuthorizedIntake}
+              disabled={
+                intakeLoading ||
+                !intakeDraft.title.trim() ||
+                !intakeDraft.locationLabel.trim() ||
+                !intakeDraft.jurisdiction.trim() ||
+                (intakeDraft.writtenAuthorizationAvailable &&
+                  !intakeDraft.authorizationReference.trim())
+              }
+            >
               {intakeLoading ? <Loader2 className="size-4 animate-spin" data-icon="inline-start" /> : null}
               Create authorized footage intake
             </Button>
@@ -1150,16 +1190,18 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
 
       <Alert>
         <Video className="size-4" />
-        <AlertTitle>Existing footage analytics</AlertTitle>
+        <AlertTitle>Existing footage analytics — target workflow</AlertTitle>
         <AlertDescription>
-          Works with uploaded video files. Production would connect RTSP CCTV streams. {DISCLAIMER}
+          The public flow reads file metadata only and generates synthetic detections; video bytes
+          are not analyzed. A controlled pilot would begin with authorized uploaded clips, not live
+          RTSP. {DISCLAIMER}
         </AlertDescription>
       </Alert>
 
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-base">Upload video file</CardTitle>
-          <CardDescription>MP4, WebM, or MOV — processed locally in demo mode</CardDescription>
+          <CardDescription>MP4, WebM, or MOV — file metadata only in demo mode</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <input

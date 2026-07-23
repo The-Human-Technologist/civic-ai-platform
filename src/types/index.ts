@@ -55,6 +55,10 @@ export interface DetectionEvent {
   evidenceLabel?: string;
   reviewedAt?: string;
   reviewedBy?: string;
+  source?: "seed" | "mock_upload" | "processing_job";
+  processingJobId?: string;
+  frameTimestampSec?: number;
+  privacyMasked?: boolean;
 }
 
 export interface PilotReport {

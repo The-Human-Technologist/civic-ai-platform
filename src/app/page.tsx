@@ -64,7 +64,9 @@ export default function LandingPage() {
             <p className="mt-4 text-lg text-muted-foreground">
               A privacy-first analytics platform for{" "}
               <strong className="font-medium text-foreground">West Bengal municipalities and traffic departments</strong>.
-              Analyse existing CCTV footage to produce human-reviewed alerts on civic maintenance and road safety — without new surveillance mandates or automatic penalties.
+              Evaluate a privacy-first workflow for turning authorized footage into human-reviewed
+              civic and road-safety alerts. The public alpha uses synthetic detections; real footage
+              processing is not enabled yet.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <LinkButton size="lg" href="/pilot-proposal">
@@ -147,18 +149,18 @@ export default function LandingPage() {
           <div className="max-w-2xl">
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">The solution</h2>
             <p className="mt-4 text-muted-foreground">
-              An open-source civic intelligence platform that analyzes video from existing CCTV or
-              uploads, detects traffic and civic events, and routes everything through{" "}
+              An open-source civic intelligence workflow designed for authorized municipal video.
+              The current alpha demonstrates detections and routes everything through{" "}
               <strong className="font-medium text-foreground">mandatory human review</strong> before
               any field action or report.
             </p>
           </div>
           <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Camera, title: "Use existing cameras", text: "RTSP/CCTV or file upload — no new surveillance mandate." },
+              { icon: Camera, title: "Authorized inputs", text: "Synthetic demos today; controlled uploaded footage is the first pilot target." },
               { icon: ShieldCheck, title: "Human review first", text: "Every alert confirmed or rejected by officials." },
-              { icon: FileSearch, title: "Evidence clips", text: "Timestamped clips and descriptions for audit trails." },
-              { icon: Eye, title: "Privacy-first", text: "No facial recognition by default; blurring planned." },
+              { icon: FileSearch, title: "Review records", text: "Timestamped mock detections demonstrate the future evidence-review flow." },
+              { icon: Eye, title: "Privacy-first", text: "No facial recognition; masking must happen before pilot evidence is stored." },
             ].map(({ icon: Icon, title, text }) => (
               <Card key={title}>
                 <CardHeader>
@@ -178,8 +180,8 @@ export default function LandingPage() {
       <section id="modules" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Detection modules</h2>
         <p className="mt-4 max-w-2xl text-muted-foreground">
-          Modular AI pipelines for road safety analytics and civic issue detection — all outputs
-          labeled as estimates or detections pending human verification.
+          Planned road-safety and civic detection capabilities, represented by synthetic outputs in
+          the public alpha. Every output remains an estimate pending human verification.
         </p>
         <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {DETECTION_MODULES.map(({ title, icon: Icon }) => (
@@ -202,8 +204,8 @@ export default function LandingPage() {
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">How it works</h2>
           <ol className="mt-10 grid gap-6 md:grid-cols-4">
             {[
-              ["Connect footage", "Upload video or link demo CCTV feeds from pilot locations."],
-              ["AI detection", "Computer vision models flag events with confidence scores."],
+              ["Choose a safe input", "Use synthetic scenarios now; authorized uploaded clips are planned for a controlled pilot."],
+              ["Generate detections", "Mock AI currently produces confidence-scored events; evaluated CV models come later."],
               ["Human review", "Officials confirm, reject, or mark for field verification."],
               ["Reports & action", "Generate pilot reports and evidence packs for departments."],
             ].map(([title, text], i) => (
@@ -260,10 +262,10 @@ export default function LandingPage() {
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {[
               "No facial recognition enabled by default",
-              "Face blurring on evidence exports (planned)",
-              "Number plate masking in non-enforcement mode",
-              "Configurable data retention (30-day pilot default)",
-              "Full audit logs for review actions",
+              "Face blurring required before future evidence persistence (pipeline integration planned)",
+              "Number plate masking required for future pilot evidence",
+              "30-day intake retention default (automatic deletion planned)",
+              "Immutable server audit logs planned; demo review metadata stays local",
               "Human review required before any external action",
             ].map((item) => (
               <div key={item} className="flex items-start gap-3">

@@ -24,12 +24,23 @@ export function getStorageConfig(): {
   s3Configured: boolean;
   limitations: string[];
 } {
-  const storageProvider = (process.env.STORAGE_PROVIDER || "disabled") as StorageProvider;
+  const configuredProvider = process.env.STORAGE_PROVIDER?.trim();
+  const storageProvider: StorageProvider = ["disabled", "local_dev_metadata_only", "s3_compatible"].includes(
+    configuredProvider ?? "",
+  )
+    ? (configuredProvider as StorageProvider)
+    : "disabled";
   const maxAuthorizedVideoUploadBytes = getStorageLimitBytes();
   const maxAuthorizedVideoUploadMb = Math.round(maxAuthorizedVideoUploadBytes / (1024 * 1024));
+  const configuredRetentionDays = Number(
+    process.env.AUTHORIZED_FOOTAGE_RETENTION_DAYS || DEFAULT_RETENTION_DAYS,
+  );
   const authorizedFootageRetentionDays =
-    Number(process.env.AUTHORIZED_FOOTAGE_RETENTION_DAYS || DEFAULT_RETENTION_DAYS) ||
-    DEFAULT_RETENTION_DAYS;
+    Number.isInteger(configuredRetentionDays) &&
+    configuredRetentionDays >= 1 &&
+    configuredRetentionDays <= 365
+      ? configuredRetentionDays
+      : DEFAULT_RETENTION_DAYS;
   const s3Configured = Boolean(
     process.env.S3_ENDPOINT &&
       process.env.S3_REGION &&

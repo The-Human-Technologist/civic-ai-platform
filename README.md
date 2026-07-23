@@ -286,6 +286,9 @@ What was added in this foundation layer:
 - a separate Python worker scaffold for future FFmpeg/OpenCV processing
 - privacy-masking scaffold for faces and number plates before evidence persistence
 - authorized footage intake/storage scaffold added; public uploads remain disabled by default
+- completed demo-job detections now flow into the existing human-review queue with de-duplication
+- authorization, status-transition, and privacy controls now fail closed by default
+- guarded local-file frame extraction and privacy-masking helpers include worker safety tests
 
 What is **still planned**, not shipped:
 
@@ -293,6 +296,7 @@ What is **still planned**, not shipped:
 - live CCTV / RTSP ingest
 - production evidence storage
 - server-enforced privacy pipeline hardening
+- authenticated queueing, server-side review audit logs, and evaluated privacy-region detection
 
 Scope remains **authorized footage only** for future pilots.
 
@@ -430,6 +434,8 @@ flowchart LR
 ```
 
 **Full diagrams (sequence + Phase 2 plan):** [docs/architecture.md](docs/architecture.md)
+
+**Current deployment gates:** [docs/production-readiness.md](docs/production-readiness.md)
 
 ---
 

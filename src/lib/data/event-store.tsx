@@ -284,7 +284,11 @@ export function EventStoreProvider({ children }: { children: ReactNode }) {
   }, [settings, hydrated]);
 
   const addEvents = useCallback((newEvents: DetectionEvent[]) => {
-    setEvents((prev) => [...newEvents, ...prev]);
+    setEvents((prev) => {
+      const existingIds = new Set(prev.map((event) => event.id));
+      const uniqueEvents = newEvents.filter((event) => !existingIds.has(event.id));
+      return uniqueEvents.length > 0 ? [...uniqueEvents, ...prev] : prev;
+    });
   }, []);
 
   const updateEventStatus = useCallback((id: string, status: ReviewStatus) => {

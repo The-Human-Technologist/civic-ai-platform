@@ -13,10 +13,8 @@ import {
   processDemoJobWithWorker,
   processVideoJobWithWorker,
 } from "@/lib/processing/worker-client";
-import type {
-  CreateProcessingJobRequest,
-  ProcessingMode,
-} from "@/lib/processing/types";
+import type { ProcessingMode } from "@/lib/processing/types";
+import { parseCreateProcessingJobRequest } from "@/lib/processing/validation";
 
 function getProcessingMode(): ProcessingMode {
   return process.env.AI_PROCESSING_MODE === "worker" ? "worker" : "mock";
@@ -34,8 +32,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as CreateProcessingJobRequest;
-  const sourceType = body.sourceType ?? "synthetic_demo";
+  let body;
+  try {
+    body = parseCreateProcessingJobRequest(await request.json());
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Invalid processing job request." },
+      { status: 400 },
+    );
+  }
+  const sourceType = body.sourceType;
   const serverMode = getProcessingMode();
   const requestedMode = body.requestedMode ?? "mock";
   const workerConfigured = isWorkerConfigured();

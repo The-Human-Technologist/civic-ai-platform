@@ -36,7 +36,7 @@ Full product context: [README.md](README.md)
 
 ---
 
-## Phase 2 — Real AI detection pipeline **Planned**
+## Phase 2 — Real AI detection pipeline **In progress**
 
 **Goal:** Replace `src/lib/mock-ai/processor.ts` with a worker-based inference service.
 
@@ -44,11 +44,15 @@ Full product context: [README.md](README.md)
 
 - [x] Add MongoDB persistence for processing jobs **(foundation scaffold; optional demo fallback)**
 - [x] Add separate Python FastAPI worker **(foundation scaffold)**
-- [x] Add FFmpeg/OpenCV frame extraction **(scaffold only)**
-- [x] Add privacy masking step **(scaffold only)**
+- [x] Add guarded FFmpeg/OpenCV frame extraction utilities **(not wired to public uploads)**
+- [x] Add fail-closed privacy masking utility **(box detection and pipeline wiring still planned)**
 - [x] Add feature-flagged worker mode **(foundation scaffold)**
+- [x] Route completed mock/worker job detections into the existing human-review UI
+- [x] Validate processing-job transitions and disable direct public job mutation
+- [x] Require written authorization metadata before controlled upload URL requests
 - [ ] Add YOLO/OpenCV model adapter
-- [ ] Store detections for human review
+- [ ] Persist review decisions and immutable audit history server-side
+- [ ] Add authenticated async queue, retries, and worker callbacks
 - [ ] Pilot with authorized uploaded footage only
 
 | Work item | Detection types |
@@ -174,4 +178,4 @@ Human-confirmed event → work-order API → department queue → resolved → a
 
 ---
 
-*Last aligned with README v0.1 — update both files when phase status changes.*
+*Last aligned with README and Phase 2A.4 safety/review hardening.*

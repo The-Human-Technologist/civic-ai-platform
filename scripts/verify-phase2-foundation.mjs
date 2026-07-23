@@ -1,7 +1,7 @@
-import { existsSync } from "node:fs";
-import { execSync } from "node:child_process";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -9,6 +9,9 @@ const requiredPaths = [
   "src/lib/processing/types.ts",
   "src/lib/processing/client.ts",
   "src/lib/processing/worker-client.ts",
+  "src/lib/processing/validation.ts",
+  "src/lib/processing/state.ts",
+  "src/lib/processing/to-review-events.ts",
   "src/lib/storage/types.ts",
   "src/lib/storage/config.ts",
   "src/lib/storage/storage-adapter.ts",
@@ -29,6 +32,7 @@ const requiredPaths = [
   "services/ai-worker/app/detectors.py",
   "services/ai-worker/app/schemas.py",
   "services/ai-worker/app/config.py",
+  "services/ai-worker/tests/test_worker_safety.py",
   "docs/real-pilot-requirements.md",
   "docs/authorized-footage-intake.md",
 ];
@@ -40,64 +44,45 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-const envExample = execSync("pwsh -NoProfile -Command \"Get-Content '.env.example'\"", {
-  cwd: root,
-  encoding: "utf8",
-});
+function read(relativePath) {
+  return readFileSync(resolve(root, relativePath), "utf8");
+}
 
-for (const requiredEnv of ["AI_PROCESSING_MODE", "MONGODB_URI", "AUTHORIZED_UPLOADS_ENABLED"]) {
+const envExample = read(".env.example");
+for (const requiredEnv of [
+  "AI_PROCESSING_MODE",
+  "MONGODB_URI",
+  "AUTHORIZED_UPLOADS_ENABLED",
+  "ALLOW_DEV_JOB_MUTATIONS",
+]) {
   if (!envExample.includes(requiredEnv)) {
     console.error(`.env.example is missing ${requiredEnv}`);
     process.exit(1);
   }
 }
 
-const uploadClient = execSync(
-  "pwsh -NoProfile -Command \"Get-Content 'src/app/dashboard/upload/upload-client.tsx'\"",
-  {
-    cwd: root,
-    encoding: "utf8",
-  },
-);
-
-if (!uploadClient.includes("createProcessingJob")) {
-  console.error("Upload page does not reference processing jobs yet");
-  process.exit(1);
+const uploadClient = read("src/app/dashboard/upload/upload-client.tsx");
+for (const requiredHook of ["createProcessingJob", "processingDetectionsToReviewEvents"]) {
+  if (!uploadClient.includes(requiredHook)) {
+    console.error(`Upload page does not reference ${requiredHook}`);
+    process.exit(1);
+  }
 }
 
-const pilotDoc = execSync(
-  "pwsh -NoProfile -Command \"Get-Content 'docs/real-pilot-requirements.md'\"",
-  {
-    cwd: root,
-    encoding: "utf8",
-  },
-);
-
-if (!pilotDoc.includes("Phase 2A.1 processing job API")) {
-  console.error("docs/real-pilot-requirements.md is missing the Phase 2A.1 processing job API section");
-  process.exit(1);
+const pilotDoc = read("docs/real-pilot-requirements.md");
+for (const milestone of [
+  "Phase 2A.1 processing job API",
+  "Phase 2A.2 worker connector",
+  "Phase 2A.3 authorized footage intake/storage scaffold",
+  "Phase 2A.4 safety and review hardening",
+]) {
+  if (!pilotDoc.includes(milestone)) {
+    console.error(`docs/real-pilot-requirements.md is missing ${milestone}`);
+    process.exit(1);
+  }
 }
 
-if (!pilotDoc.includes("Phase 2A.2 worker connector")) {
-  console.error("docs/real-pilot-requirements.md is missing the Phase 2A.2 worker connector section");
-  process.exit(1);
-}
-
-if (!pilotDoc.includes("Phase 2A.3 authorized footage intake/storage scaffold")) {
-  console.error(
-    "docs/real-pilot-requirements.md is missing the Phase 2A.3 authorized footage intake/storage scaffold section",
-  );
-  process.exit(1);
-}
-
-const workerMain = execSync(
-  "pwsh -NoProfile -Command \"Get-Content 'services/ai-worker/main.py'\"",
-  {
-    cwd: root,
-    encoding: "utf8",
-  },
-);
-
+const workerMain = read("services/ai-worker/main.py");
 for (const endpoint of ['"/health"', '"/process-demo-job"', '"/process-video-job"']) {
   if (!workerMain.includes(endpoint)) {
     console.error(`services/ai-worker/main.py is missing ${endpoint}`);
@@ -105,13 +90,34 @@ for (const endpoint of ['"/health"', '"/process-demo-job"', '"/process-video-job
   }
 }
 
-const trackedFiles = execSync("git ls-files", { cwd: root, encoding: "utf8" }).split(/\r?\n/);
-const forbiddenPattern =
-  /\.(mp4|mov|webm|avi|mkv|zip|tar|tar\.gz|pt|onnx|engine)$/i;
-const forbiddenDirectoryPattern = /^(data|datasets|videos)\//i;
+function listFallbackFiles(directory) {
+  const excluded = new Set([".git", ".next", ".vercel", "node_modules", ".venv", "venv"]);
+  const output = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (excluded.has(entry.name)) continue;
+    const absolute = resolve(directory, entry.name);
+    if (entry.isDirectory()) output.push(...listFallbackFiles(absolute));
+    else output.push(relative(root, absolute).replaceAll("\\", "/"));
+  }
+  return output;
+}
 
+let trackedFiles;
+try {
+  trackedFiles = execFileSync("git", ["ls-files"], { cwd: root, encoding: "utf8" }).split(/\r?\n/);
+} catch {
+  console.warn("Warning: git process unavailable; using a conservative filesystem policy scan.");
+  trackedFiles = listFallbackFiles(root);
+}
+
+const forbiddenPattern = /\.(mp4|mov|webm|avi|mkv|zip|tar|tar\.gz|pt|onnx|engine)$/i;
+const forbiddenDirectoryPattern = /^(data|datasets|videos)\//i;
+const dataAllowlist = new Set(["data/readme.local.md", "data/sources.example.json"]);
 const forbidden = trackedFiles.filter(
-  (file) => file && (forbiddenPattern.test(file) || forbiddenDirectoryPattern.test(file)),
+  (file) =>
+    file &&
+    !dataAllowlist.has(file.toLowerCase()) &&
+    (forbiddenPattern.test(file) || forbiddenDirectoryPattern.test(file)),
 );
 
 if (forbidden.length > 0) {

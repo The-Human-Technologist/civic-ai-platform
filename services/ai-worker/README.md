@@ -19,7 +19,8 @@ Why separate?
 - `POST /process-demo-job` scaffold using a mock detector
 - `POST /process-video-job` scaffold for future uploaded-video jobs
 - FFmpeg / OpenCV frame-extraction function signatures
-- Privacy-masking utility scaffold (blur / mosaic if OpenCV exists)
+- Guarded local-file FFmpeg/OpenCV frame extraction utilities (not wired to public uploads)
+- Fail-closed face/plate region mosaicing utility (region detection is not bundled)
 - Shared job / detection schemas matching the frontend processing model
 
 ## What is not implemented yet
@@ -65,6 +66,12 @@ Worker will eventually receive **storage object references**, not public URLs or
 ## Warning
 
 Worker scaffold returns **mock detections only**. No model weights or real CV inference are bundled in this repository.
+
+Run the worker safety tests from the repository root:
+
+```bash
+npm run test:worker
+```
 
 ## Privacy-first rule
 
