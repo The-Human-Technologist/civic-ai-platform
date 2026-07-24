@@ -22,6 +22,7 @@ const requiredPaths = [
   "src/app/api/processing/jobs/[id]/route.ts",
   "src/app/api/processing/config/route.ts",
   "src/app/api/processing/worker-health/route.ts",
+  "src/app/api/processing/video/route.ts",
   "src/app/api/authorized-footage/intakes/route.ts",
   "src/app/api/authorized-footage/intakes/[id]/route.ts",
   "src/app/api/authorized-footage/presign-upload/route.ts",
@@ -33,6 +34,8 @@ const requiredPaths = [
   "services/ai-worker/app/schemas.py",
   "services/ai-worker/app/config.py",
   "services/ai-worker/tests/test_worker_safety.py",
+  "services/ai-worker/scripts/bootstrap_model.py",
+  "services/ai-worker/scripts/doctor.py",
   "docs/real-pilot-requirements.md",
   "docs/authorized-footage-intake.md",
 ];
@@ -54,6 +57,8 @@ for (const requiredEnv of [
   "MONGODB_URI",
   "AUTHORIZED_UPLOADS_ENABLED",
   "ALLOW_DEV_JOB_MUTATIONS",
+  "YOLO_MODEL_PATH",
+  "PRIVACY_MASKING_ENABLED",
 ]) {
   if (!envExample.includes(requiredEnv)) {
     console.error(`.env.example is missing ${requiredEnv}`);
@@ -62,7 +67,11 @@ for (const requiredEnv of [
 }
 
 const uploadClient = read("src/app/dashboard/upload/upload-client.tsx");
-for (const requiredHook of ["createProcessingJob", "processingDetectionsToReviewEvents"]) {
+for (const requiredHook of [
+  "createProcessingJob",
+  "processAuthorizedVideo",
+  "processingDetectionsToReviewEvents",
+]) {
   if (!uploadClient.includes(requiredHook)) {
     console.error(`Upload page does not reference ${requiredHook}`);
     process.exit(1);
@@ -83,7 +92,7 @@ for (const milestone of [
 }
 
 const workerMain = read("services/ai-worker/main.py");
-for (const endpoint of ['"/health"', '"/process-demo-job"', '"/process-video-job"']) {
+for (const endpoint of ['"/health"', '"/process-sample-job"', '"/process-video"']) {
   if (!workerMain.includes(endpoint)) {
     console.error(`services/ai-worker/main.py is missing ${endpoint}`);
     process.exit(1);
@@ -126,4 +135,30 @@ if (forbidden.length > 0) {
   process.exit(1);
 }
 
-console.log("Phase 2A foundation verified.");
+const videoRoute = read("src/app/api/processing/video/route.ts");
+for (const safeguard of [
+  "authorizationConfirmed",
+  "authorizationReference",
+  "ALLOWED_TYPES",
+  "MAX_VIDEO_UPLOAD_MB",
+]) {
+  if (!videoRoute.includes(safeguard)) {
+    console.error(`Authorized-video route is missing ${safeguard}`);
+    process.exit(1);
+  }
+}
+
+const detector = read("services/ai-worker/app/detectors.py");
+for (const capability of [
+  "YoloCivicDetector",
+  "PRIVACY_SENSITIVE_OBJECTS",
+  "humanReviewStatus=\"pending\"",
+  "mask_object_regions",
+]) {
+  if (!detector.includes(capability)) {
+    console.error(`Real detector is missing ${capability}`);
+    process.exit(1);
+  }
+}
+
+console.log("Phase 2 real-inference and safety contract verified.");

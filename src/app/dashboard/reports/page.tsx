@@ -124,7 +124,7 @@ export default function ReportsPage() {
         </section>
 
         <footer className="mt-10 border-t pt-6 text-center text-xs text-muted-foreground">
-          Generated from AI Civic &amp; Road Safety Intelligence Platform · MVP demo · No automatic enforcement
+          Generated from AI Civic &amp; Road Safety Intelligence Platform · Working prototype · No automatic enforcement
         </footer>
       </div>
     </div>

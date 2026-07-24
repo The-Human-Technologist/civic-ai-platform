@@ -14,7 +14,7 @@ export function LandingFooter() {
             intelligence with human-reviewed alerts — not a surveillance system.
           </p>
           <p className="mt-3 text-xs text-muted-foreground">
-            AGPL-3.0 · Mock detections only · No automatic fines · No facial recognition
+            AGPL-3.0 · Real authorized-video inference · No automatic fines · No facial recognition
           </p>
         </div>
         <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-muted-foreground sm:grid-cols-3">
@@ -22,9 +22,9 @@ export function LandingFooter() {
             <span className="font-medium text-foreground">Product</span>
             <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
             <Link href="/pilot-proposal" className="hover:text-foreground">Pilot Proposal</Link>
-            <Link href="/dashboard/demo-footage" className="hover:text-foreground">Demo Footage</Link>
-            <Link href="/dashboard/upload" className="hover:text-foreground">Upload demo</Link>
-            <a href="https://civic-ai-platform-three.vercel.app" className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Live demo</a>
+            <Link href="/dashboard/demo-footage" className="hover:text-foreground">Sample Footage</Link>
+            <Link href="/dashboard/upload" className="hover:text-foreground">Analyze footage</Link>
+            <a href="https://civic-ai-platform-three.vercel.app" className="hover:text-foreground" rel="noopener noreferrer" target="_blank">Hosted prototype</a>
           </div>
           <div className="flex flex-col gap-2">
             <span className="font-medium text-foreground">Open source</span>
@@ -41,7 +41,7 @@ export function LandingFooter() {
         </div>
       </div>
       <div className="border-t py-4 text-center text-xs text-muted-foreground">
-        © 2026 Civic AI Platform Contributors · Synthetic demo data · Not affiliated with any government unless stated by deployer
+        © 2026 Civic AI Platform Contributors · Real and synthetic sources are labeled · Not affiliated with any government unless stated by deployer
       </div>
     </footer>
   );

@@ -29,13 +29,13 @@ export type DataSource = {
 export const DATA_SOURCE_KIND_LABELS: Record<DataSourceKind, string> = {
   public_dataset: "Public research dataset",
   stock_footage: "Stock footage (external)",
-  synthetic: "Synthetic / demo",
+  synthetic: "Synthetic sample",
   self_recorded: "Self-recorded (masked)",
   authorized_pilot: "Authorized pilot footage",
 };
 
 export const DATA_SOURCE_STATUS_LABELS: Record<DataSourceStatus, string> = {
-  available_for_demo: "Available for demo",
+  available_for_demo: "Available as sample",
   manual_download_required: "Manual download required",
   planned: "Planned",
   requires_permission: "Requires written permission",
@@ -66,7 +66,7 @@ export const dataSources: DataSource[] = [
       "Manual source verification required — confirm paper/dataset license before download. Not Kolkata/Barasat CCTV.",
     status: "manual_download_required",
     privacyRisk: "high",
-    recommendedUse: "Offline research only; blur/mask before any demo clip",
+    recommendedUse: "Offline research only; blur/mask before any presentation clip",
     notAllowed: ["Claiming as local municipal CCTV", "Committing raw clips to Git"],
   },
   {
@@ -96,14 +96,14 @@ export const dataSources: DataSource[] = [
   },
   {
     id: "synthetic-demo",
-    name: "Synthetic civic demo footage",
+    name: "Synthetic civic sample footage",
     kind: "synthetic",
-    purpose: "Safe public-alpha demos without real-world identifiers",
+    purpose: "Safe workflow samples without real-world identifiers",
     dataType: "Mock feeds, placeholders, generated illustrations",
     licenseNote: "Project-generated — no real CCTV.",
     status: "available_for_demo",
     privacyRisk: "low",
-    recommendedUse: "Default for live demo and GitHub — see demo feed cards in app",
+    recommendedUse: "Workflow training and GitHub screenshots — see sample feed cards in app",
   },
   {
     id: "authorized-municipal",
@@ -177,7 +177,7 @@ export const dataSources: DataSource[] = [
     kind: "self_recorded",
     purpose: "Controlled captures for local testing",
     dataType: "Your own phone/dashcam video",
-    licenseNote: "You must blur faces and mask plates before demo or storage.",
+    licenseNote: "You must blur faces and mask plates before presentation or storage.",
     status: "not_in_repo",
     privacyRisk: "high",
     recommendedUse: "Local data/samples only — never commit to Git",
@@ -188,7 +188,7 @@ export const dataSources: DataSource[] = [
 export const ALLOWED_SOURCE_SUMMARY = [
   "Public research datasets with clear license/terms",
   "Stock traffic clips with verified reuse permission (external links)",
-  "Synthetic and in-app demo footage",
+  "Synthetic and in-app sample footage",
   "Self-recorded video after face/plate masking (local only)",
   "Officially authorized municipal pilot footage (written agreement)",
 ] as const;
@@ -198,7 +198,7 @@ export const NOT_ALLOWED_SOURCE_SUMMARY = [
   "Scraped live camera feeds",
   "Real CCTV or large video files committed to GitHub",
   "School, hospital, or private-space footage without authorization",
-  "Identifiable faces or plates in public demo material",
+  "Identifiable faces or plates in public presentation material",
   "Any footage pipeline for automatic fines or challans",
   "Claims of training on real Kolkata/Barasat CCTV in v0.1",
 ] as const;
@@ -207,8 +207,8 @@ export const FOOTAGE_WORKFLOW_STEPS = [
   "Choose a licensed or authorized source from the registry",
   "Download manually to local data/raw (outside Git)",
   "Preprocess locally — sample frames, resize, validate license",
-  "Blur faces and mask number plates before demo or export",
-  "Run inference worker (Phase 2) — mock only in MVP",
+  "Blur faces and mask number plates before presentation or export",
+  "Run the YOLO26n inference worker on authorized or properly licensed video",
   "Store metadata and minimal evidence clips for human review only",
 ] as const;
 
@@ -224,7 +224,7 @@ export const PILOT_FOOTAGE_REQUIREMENTS = [
 export const PRIVACY_CHECKLIST = [
   "No raw video in git commits (check .gitignore)",
   "sources.json documents license and download date locally",
-  "Demo screenshots use synthetic data or masked clips",
+  "Public screenshots use synthetic data or masked clips",
   "README does not claim real local CCTV training",
-  "Upload page uses mock AI only in public alpha",
+  "Synthetic workflow samples are visibly separated from real YOLO inference",
 ] as const;

@@ -50,12 +50,12 @@ export const GOV_FOOTER =
 
 /** Shown in UI and referenced in open-source docs */
 export const MVP_LIMITATIONS = [
-  "This MVP does not issue automatic fines or challans.",
-  "This MVP does not perform facial recognition.",
-  "This MVP does not claim legal-grade speed enforcement.",
-  "All detections are mock/demo outputs for human-review workflow demonstration.",
-  "Real deployments must follow local laws, procurement rules, privacy rules, and official authorization.",
+  "This prototype does not issue automatic fines or challans.",
+  "This prototype does not perform facial recognition.",
+  "This prototype does not claim legal-grade speed enforcement.",
+  "Real YOLO results and synthetic samples are labeled separately.",
+  "Operational deployments must follow local laws, procurement rules, privacy rules, and official authorization.",
 ] as const;
 
 export const DEMO_DATA_NOTICE =
-  "All sample locations, events, camera feeds, and statistics in this repository are synthetic demo data. No real individuals, vehicles, or enforcement actions are represented.";
+  "Sample locations, events, camera feeds, and statistics are synthetic. Real worker results are separately labeled. No automatic enforcement action is represented.";

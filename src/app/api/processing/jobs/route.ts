@@ -11,7 +11,6 @@ import {
   isWorkerConfigured,
   isWorkerModeEnabled,
   processDemoJobWithWorker,
-  processVideoJobWithWorker,
 } from "@/lib/processing/worker-client";
 import type { ProcessingMode } from "@/lib/processing/types";
 import { parseCreateProcessingJobRequest } from "@/lib/processing/validation";
@@ -27,7 +26,7 @@ export async function GET() {
     mode: getProcessingMode(),
     workerModeEnabled: isWorkerModeEnabled(),
     workerConfigured: isWorkerConfigured(),
-    note: "Processing jobs are metadata only in the public alpha. Large video processing must run in a separate worker service.",
+    note: "Synthetic jobs are available here. Real authorized-video jobs use /api/processing/video and the separate AI worker.",
   });
 }
 
@@ -134,8 +133,8 @@ export async function POST(request: Request) {
         workerModeEnabled,
         workerConfigured,
         limitations: [
-          "Mock AI remains the default public path.",
-          "Real video bytes are not uploaded yet.",
+          "This endpoint provides synthetic sample processing.",
+          "Real authorized video uses /api/processing/video.",
           "No live CCTV or RTSP support.",
           "Human review is still required.",
         ],
@@ -144,8 +143,8 @@ export async function POST(request: Request) {
         processingMs: mockResult.processingMs,
         note:
           sourceType === "uploaded_video"
-            ? "Metadata-only mock job created. No video bytes were uploaded in the public alpha."
-            : "Mock processing job completed. Real worker-based video processing remains scaffolded only.",
+            ? "Synthetic metadata workflow completed. Use the authorized-video endpoint for real inference."
+            : "Synthetic sample processing completed.",
       },
       { status: 201 },
     );
@@ -156,10 +155,22 @@ export async function POST(request: Request) {
     progress: 5,
   });
 
-  const processResult =
-    sourceType === "synthetic_demo"
-      ? await processDemoJobWithWorker(queued ?? job)
-      : await processVideoJobWithWorker(queued ?? job);
+  if (sourceType !== "synthetic_demo") {
+    const failedJob = await updateProcessingJob(job.id, {
+      status: "failed",
+      progress: 5,
+      error: "Video bytes are required. Submit authorized clips to /api/processing/video.",
+    });
+    return NextResponse.json(
+      {
+        error: "Use /api/processing/video for real authorized-video inference.",
+        job: failedJob ?? job,
+      },
+      { status: 400 },
+    );
+  }
+
+  const processResult = await processDemoJobWithWorker(queued ?? job);
 
   if (!processResult.ok) {
     const failedJob = await updateProcessingJob(job.id, {
@@ -176,14 +187,11 @@ export async function POST(request: Request) {
         workerConfigured,
         limitations: [
           "Worker mode is feature-flagged.",
-          "Real video bytes are still disabled.",
+          "Real video uses the separate authorized-video endpoint.",
           "No live CCTV or RTSP support.",
-          "No real inference is bundled in this repository.",
+          "Every alert requires human review.",
         ],
-        note:
-          sourceType === "uploaded_video"
-            ? "Worker mode is enabled, but real video byte upload is not implemented yet."
-            : "Worker mode is enabled, but the worker is offline or failed to respond.",
+        note: "Worker mode is enabled, but the sample worker failed to respond.",
       },
       { status: 201 },
     );

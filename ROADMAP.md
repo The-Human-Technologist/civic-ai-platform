@@ -14,7 +14,7 @@ Full product context: [README.md](README.md)
 
 ---
 
-## Phase 1 — Demo dashboard & mock detections **Shipped (MVP)**
+## Phase 1 — Dashboard, synthetic workflow samples, and review UX **Shipped**
 
 **Goal:** Prove the **human-reviewed civic workflow** without real inference or production infra.
 
@@ -36,21 +36,28 @@ Full product context: [README.md](README.md)
 
 ---
 
-## Phase 2 — Real AI detection pipeline **In progress**
+## Phase 2 — Real AI detection pipeline **Prototype shipped**
 
 **Goal:** Replace `src/lib/mock-ai/processor.ts` with a worker-based inference service.
 
 ### Phase 2A foundation checklist
 
-- [x] Add MongoDB persistence for processing jobs **(foundation scaffold; optional demo fallback)**
-- [x] Add separate Python FastAPI worker **(foundation scaffold)**
+- [x] Add MongoDB persistence for processing jobs **(optional in-memory local fallback)**
+- [x] Add separate Python FastAPI worker
 - [x] Add guarded FFmpeg/OpenCV frame extraction utilities **(not wired to public uploads)**
-- [x] Add fail-closed privacy masking utility **(box detection and pipeline wiring still planned)**
-- [x] Add feature-flagged worker mode **(foundation scaffold)**
+- [x] Add fail-closed privacy masking utility
+- [x] Add feature-flagged worker mode
+- [x] Add authorized multipart video upload API with size/type checks
+- [x] Add YOLO26n inference optimized for RTX 3050-class hardware
+- [x] Add CUDA FP16 auto-selection with CPU fallback
+- [x] Add real person/vehicle counts and congestion advisories
+- [x] Add privacy-masked evidence frames to human review
+- [x] Delete source video and decoded frames after each run
+- [x] Add configurable custom civic checkpoint support
 - [x] Route completed mock/worker job detections into the existing human-review UI
 - [x] Validate processing-job transitions and disable direct public job mutation
 - [x] Require written authorization metadata before controlled upload URL requests
-- [ ] Add YOLO/OpenCV model adapter
+- [x] Add YOLO/OpenCV model adapter
 - [ ] Persist review decisions and immutable audit history server-side
 - [ ] Add authenticated async queue, retries, and worker callbacks
 - [ ] Pilot with authorized uploaded footage only
@@ -69,7 +76,13 @@ Full product context: [README.md](README.md)
 
 **Env:** `DATABASE_URL`, `AI_PROCESSING_MODE=worker`
 
-**Exit criteria:** Process a real uploaded MP4 and persist detections server-side with confidence scores.
+**Prototype exit criteria:** Process a real uploaded MP4 through YOLO26n, return
+model provenance and confidence-backed advisory events, privacy-mask evidence,
+delete the source clip, and route results into mandatory human review.
+
+**Production work that remains:** persistent review/audit records, authenticated
+roles, an async queue with retries, evaluated custom civic weights, observability,
+and a formally authorized field pilot.
 
 ---
 

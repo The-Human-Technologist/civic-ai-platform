@@ -71,6 +71,10 @@ export interface ProcessingDetection {
   boundingBox?: ProcessingBoundingBox;
   privacyMasked: boolean;
   humanReviewStatus: ReviewStatus;
+  modelLabel?: string;
+  trackId?: number;
+  evidenceImageDataUrl?: string;
+  evidencePersisted?: boolean;
 }
 
 export interface ProcessingJobWithDetections extends ProcessingJob {
@@ -121,6 +125,11 @@ export interface ProcessingJobResponse {
   eventCount?: number;
   framesAnalyzed?: number;
   processingMs?: number;
+  modelName?: string;
+  device?: string;
+  realInferenceEnabled?: boolean;
+  objectsDetected?: number;
+  classCounts?: Record<string, number>;
 }
 
 export interface WorkerHealthResponse {
@@ -132,6 +141,17 @@ export interface WorkerHealthResponse {
     service: string;
     mode: string;
     realInferenceEnabled: boolean;
+    modelName?: string;
+    modelAvailable?: boolean;
+    device?: string;
+    privacyMaskingEnabled?: boolean;
   };
   error?: string;
+}
+
+export interface ProcessAuthorizedVideoInput {
+  file: File;
+  locationLabel: string;
+  authorizationReference: string;
+  authorizationConfirmed: boolean;
 }

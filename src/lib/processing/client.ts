@@ -3,6 +3,7 @@ import type {
   ProcessingJobResponse,
   ProcessingJobsListResponse,
   WorkerHealthResponse,
+  ProcessAuthorizedVideoInput,
 } from "@/lib/processing/types";
 
 async function readJson<T>(response: Response): Promise<T> {
@@ -50,6 +51,21 @@ export async function getWorkerHealth(): Promise<WorkerHealthResponse> {
     cache: "no-store",
   });
   return readJson<WorkerHealthResponse>(response);
+}
+
+export async function processAuthorizedVideo(
+  input: ProcessAuthorizedVideoInput,
+): Promise<ProcessingJobResponse> {
+  const formData = new FormData();
+  formData.set("video", input.file, input.file.name);
+  formData.set("locationLabel", input.locationLabel);
+  formData.set("authorizationReference", input.authorizationReference);
+  formData.set("authorizationConfirmed", String(input.authorizationConfirmed));
+  const response = await fetch("/api/processing/video", {
+    method: "POST",
+    body: formData,
+  });
+  return readJson<ProcessingJobResponse>(response);
 }
 
 export async function pollProcessingJob(

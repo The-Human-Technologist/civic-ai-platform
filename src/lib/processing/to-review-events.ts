@@ -74,11 +74,16 @@ export function processingDetectionsToReviewEvents(
       status: detection.humanReviewStatus,
       description: DESCRIPTION_BY_TYPE[type],
       recommendedAction: ACTION_BY_TYPE[type],
-      evidenceLabel: `Processing job ${job.id.slice(0, 8)} · synthetic/authorized metadata`,
+      evidenceLabel: detection.evidenceImageDataUrl
+        ? `Privacy-masked YOLO evidence · job ${job.id.slice(0, 8)}`
+        : `Processing job ${job.id.slice(0, 8)} · no evidence image retained`,
       source: "processing_job",
       processingJobId: job.id,
       frameTimestampSec: detection.frameTimestampSec,
       privacyMasked: detection.privacyMasked,
+      modelLabel: detection.modelLabel,
+      evidenceImageDataUrl: detection.evidenceImageDataUrl,
+      evidencePersisted: detection.evidencePersisted,
     } satisfies DetectionEvent];
   });
 }

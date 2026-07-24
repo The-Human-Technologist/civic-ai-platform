@@ -243,11 +243,11 @@ export default function PilotProposalPage() {
 
         <div className="flex flex-col items-center gap-4 text-center print:hidden">
           <p className="text-sm text-muted-foreground">
-            Interactive demo dashboard available for stakeholder walkthrough.
+            Interactive prototype dashboard available for stakeholder walkthrough.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <LinkButton size="lg" href="/dashboard">
-              Open Dashboard Demo
+              Open Prototype Dashboard
             </LinkButton>
             <PrintButton />
           </div>

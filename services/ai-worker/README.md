@@ -1,98 +1,68 @@
-# AI worker scaffold
+# Civic AI worker
 
-This folder contains the **Phase 2A real-processing foundation** for the Civic AI Platform.
+Local FastAPI worker for real, privacy-first YOLO analysis of explicitly authorized video clips.
 
-## What it is
+## What works
 
-A separate Python **FastAPI** worker that is meant to run outside the Next.js / Vercel frontend.
+- YOLO26n inference at 640px, with CUDA FP16 when an NVIDIA GPU is available
+- sampled video processing (1 FPS by default)
+- real person and vehicle detection from standard pretrained weights
+- conservative congestion advisories from person/vehicle density
+- custom civic-class support when `YOLO_MODEL_PATH` points to trained weights
+- whole-person and whole-vehicle masking before an evidence image leaves the worker
+- immediate deletion of the uploaded source clip and decoded frames
+- mandatory authorization reference and human-review status
 
-Why separate?
+The worker does not perform facial recognition, citizen scoring, automatic challans, live CCTV
+ingestion, or legal speed measurement.
 
-- Video frame extraction is too heavy for a frontend route.
-- Privacy masking should happen before evidence persistence.
-- Future pilot storage and worker queues should not block the public demo UI.
+## Windows setup for an RTX 3050
 
-## What is implemented now
+From `services/ai-worker`:
 
-- frontend can create processing job records through the Next.js API
-- `GET /health` FastAPI health check
-- `POST /process-demo-job` scaffold using a mock detector
-- `POST /process-video-job` scaffold for future uploaded-video jobs
-- FFmpeg / OpenCV frame-extraction function signatures
-- Guarded local-file FFmpeg/OpenCV frame extraction utilities (not wired to public uploads)
-- Fail-closed face/plate region mosaicing utility (region detection is not bundled)
-- Shared job / detection schemas matching the frontend processing model
-
-## What is not implemented yet
-
-- No model downloads
-- No model weights bundled in this repository
-- No YOLO weights
-- No RTSP / live CCTV support
-- No facial recognition
-- No OCR / ANPR / challan logic
-- No production queue, storage, or auth
-
-## How to run locally
-
-```bash
-cd services/ai-worker
-python -m venv .venv
-.venv\Scripts\activate
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+Copy-Item .env.example .env
+python scripts\bootstrap_model.py
+python scripts\doctor.py
+uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-Then test:
+If `doctor.py` reports `CUDA available: False`, install the Windows CUDA build of PyTorch using
+the command generated at https://pytorch.org/get-started/locally/ and run the doctor again. Do not
+continue to the police walkthrough until it reports the NVIDIA GPU.
 
-```bash
-curl http://localhost:8000/health
+Start Next.js from the repository root in a second terminal:
+
+```powershell
+Copy-Item .env.example .env.local
+npm run dev
 ```
 
-## Enable worker mode in Next.js
+Then open `/dashboard/upload`, check worker health, select an authorized clip, enter its location
+and authorization/licence reference, confirm authorization, and run analysis.
 
-Set these in `.env.local` for local testing:
+## Standard versus custom weights
 
-```bash
-AI_PROCESSING_MODE=worker
-AI_WORKER_URL=http://localhost:8000
+`yolo26n.pt` is a general COCO checkpoint. It detects people and vehicles and supports the real
+congestion advisory in this repository. It does not honestly detect potholes, waterlogging,
+garbage overflow, wrong-way driving, or helmet violations.
+
+To add those classes, train/evaluate a civic dataset and set:
+
+```dotenv
+YOLO_MODEL_PATH=models/civic-best.pt
 ```
 
-The frontend can then create processing jobs that call the worker scaffold for synthetic demos.
-Uploaded-video jobs still send metadata only.
+Recognized custom class names are documented in `app/detectors.py`. Model weights are intentionally
+gitignored and must never be committed with private footage.
 
-Worker will eventually receive **storage object references**, not public URLs or GitHub-hosted videos.
+## API
 
-## Warning
-
-Worker scaffold returns **mock detections only**. No model weights or real CV inference are bundled in this repository.
-
-Run the worker safety tests from the repository root:
-
-```bash
-npm run test:worker
-```
-
-## Privacy-first rule
-
-Future real pilot processing must follow this order:
-
-```text
-Authorized uploaded video
-→ frame extraction
-→ privacy masking
-→ detection
-→ human review
-```
-
-Faces and number plates should be masked **before evidence persistence**. Detection for masking is allowed; identity recognition is not.
-
-## Planned future integration
-
-- Frontend creates processing job metadata
-- Worker receives authorized uploaded-video job
-- FFmpeg/OpenCV extracts frames
-- Detector adapter runs YOLO/OpenCV models behind feature flags
-- Detections are stored for human review
-- Public demo remains mock by default until pilot hardening is complete
-- Worker integration remains scaffolded until a safe backend deployment is available
+- `GET /health`
+- `POST /process-video` (multipart: video, jobId, locationLabel, authorizationReference,
+  authorizationConfirmed)
+- `POST /process-sample-job` (synthetic workflow training only)

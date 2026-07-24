@@ -1,6 +1,7 @@
 "use client";
 
 import { use } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -48,7 +49,7 @@ export default function EventReviewPage({
           <AlertTriangle className="size-4" />
           <AlertTitle>Event not found</AlertTitle>
           <AlertDescription>
-            No detection with ID <span className="font-mono">{id}</span> exists in the demo dataset.
+            No detection with ID <span className="font-mono">{id}</span> exists in this workspace.
             It may have been reset or the link is outdated.
           </AlertDescription>
         </Alert>
@@ -79,6 +80,8 @@ export default function EventReviewPage({
       processingJobId: event!.processingJobId,
       frameTimestampSec: event!.frameTimestampSec,
       privacyMasked: event!.privacyMasked,
+      modelLabel: event!.modelLabel,
+      evidenceIncluded: Boolean(event!.evidenceImageDataUrl),
       disclaimer: DISCLAIMER,
       exportedAt: new Date().toISOString(),
     };
@@ -160,6 +163,11 @@ export default function EventReviewPage({
                   Frame {event.frameTimestampSec ?? 0}s · Privacy-masked output:{" "}
                   {event.privacyMasked ? "yes" : "no"}
                 </p>
+                {event.modelLabel ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Model signal: {event.modelLabel.replaceAll("_", " ")}
+                  </p>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -180,19 +188,35 @@ export default function EventReviewPage({
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base">Evidence clip</CardTitle>
+          <CardTitle className="text-base">Evidence frame</CardTitle>
           <CardDescription>
-            Placeholder — production would show blurred/masked video segment
+            Privacy-masked worker output for human review
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex aspect-video flex-col items-center justify-center gap-3 rounded-lg bg-slate-900 text-slate-400">
-            <Video className="size-12" />
-            <p className="text-sm">{event.evidenceLabel ?? "Evidence clip unavailable"}</p>
-            <p className="text-xs text-slate-500">
-              No real evidence media is bundled. Masking is mandatory before future persistence.
-            </p>
-          </div>
+          {event.evidenceImageDataUrl ? (
+            <div className="overflow-hidden rounded-lg border bg-slate-950">
+              <Image
+                src={event.evidenceImageDataUrl}
+                alt={`Privacy-masked evidence for ${EVENT_TYPE_LABELS[event.type]}`}
+                width={1280}
+                height={720}
+                unoptimized
+                className="h-auto w-full object-contain"
+              />
+              <p className="border-t border-white/10 px-3 py-2 text-xs text-slate-300">
+                {event.evidenceLabel} · original video deleted after processing
+              </p>
+            </div>
+          ) : (
+            <div className="flex aspect-video flex-col items-center justify-center gap-3 rounded-lg bg-slate-900 p-6 text-center text-slate-400">
+              <Video className="size-12" />
+              <p className="text-sm">{event.evidenceLabel ?? "Evidence frame unavailable"}</p>
+              <p className="text-xs text-slate-500">
+                Synthetic samples do not contain evidence media.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -211,7 +235,7 @@ export default function EventReviewPage({
             </Button>
             <Button variant="outline" onClick={exportReport}>
               <Download className="size-4" data-icon="inline-start" />
-              Export evidence report (mock JSON)
+              Export evidence report (JSON)
             </Button>
           </div>
         </CardContent>

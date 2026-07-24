@@ -31,7 +31,7 @@ const PRIVACY_CONTROLS = [
   {
     id: "audit",
     label: "Audit logs (planned)",
-    desc: "Demo review metadata is local; immutable server audit is not shipped",
+    desc: "Local review metadata is browser-based; immutable server audit is not shipped",
     key: "auditLogsEnabled" as const,
   },
   {
@@ -128,7 +128,7 @@ export default function SettingsPage() {
                 className="w-full max-w-[140px]"
               />
               <p className="text-xs text-muted-foreground">
-                Demo setting only. Production requires tested object-lifecycle deletion.
+                Prototype setting only. Production requires tested object-lifecycle deletion.
               </p>
             </div>
           </CardContent>
@@ -136,7 +136,7 @@ export default function SettingsPage() {
 
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base">Demo data</CardTitle>
+            <CardTitle className="text-base">Synthetic sample data</CardTitle>
             <CardDescription>Reset local pilot dataset to seed values</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -148,11 +148,11 @@ export default function SettingsPage() {
               className="shrink-0"
               onClick={() => {
                 resetDemoData();
-                toast.success("Demo data reset");
+                toast.success("Synthetic sample data reset");
               }}
             >
               <RotateCcw className="size-4" data-icon="inline-start" />
-              Reset demo events
+              Reset sample events
             </Button>
           </CardContent>
         </Card>

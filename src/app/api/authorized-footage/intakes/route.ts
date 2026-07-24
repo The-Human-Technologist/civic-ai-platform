@@ -95,7 +95,7 @@ export async function POST(request: Request) {
   return NextResponse.json(
     {
       intake,
-      note: "Authorized footage intake created. Public alpha stores metadata only and keeps uploads disabled by default.",
+      note: "Authorized footage intake created. Persistent storage stays disabled by default; direct worker analysis deletes source clips.",
     },
     { status: 201 },
   );

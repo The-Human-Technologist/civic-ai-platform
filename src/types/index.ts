@@ -59,6 +59,9 @@ export interface DetectionEvent {
   processingJobId?: string;
   frameTimestampSec?: number;
   privacyMasked?: boolean;
+  modelLabel?: string;
+  evidenceImageDataUrl?: string;
+  evidencePersisted?: boolean;
 }
 
 export interface PilotReport {

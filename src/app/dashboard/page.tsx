@@ -77,7 +77,7 @@ export default function DashboardOverviewPage() {
         </div>
         <div className="rounded-lg border bg-card px-4 py-3 shadow-sm">
           <p className="text-xs text-muted-foreground">CCTV feeds online</p>
-          <p className="mt-1 font-semibold">2 live · 1 upload demo</p>
+          <p className="mt-1 font-semibold">2 synthetic scenarios · authorized upload ready</p>
         </div>
         <div className="rounded-lg border bg-card px-4 py-3 shadow-sm">
           <p className="text-xs text-muted-foreground">Enforcement mode</p>

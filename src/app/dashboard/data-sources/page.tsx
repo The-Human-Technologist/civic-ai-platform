@@ -45,8 +45,9 @@ export default function DataSourcesPage() {
         <AlertTriangle className="size-4 text-amber-600" />
         <AlertTitle>MVP: mock detections only</AlertTitle>
         <AlertDescription>
-          This public alpha does <strong>not</strong> include real CCTV footage, bundled video
-          datasets, or real AI inference. Upload and demo feeds use synthetic processing. See{" "}
+          This repository does <strong>not</strong> bundle CCTV footage or video datasets. The
+          prototype performs real inference only on explicitly authorized uploads; synthetic
+          scenarios remain clearly labeled. See{" "}
           <Link
             href="https://github.com/The-Human-Technologist/civic-ai-platform/blob/master/DATA_SOURCES.md"
             className="font-medium underline underline-offset-2"
@@ -57,7 +58,7 @@ export default function DataSourcesPage() {
           </Link>{" "}
           and the{" "}
           <Link href="/dashboard/demo-footage" className="font-medium underline underline-offset-2">
-            Demo Footage Library
+            Sample Footage Library
           </Link>{" "}
           in the repository.
         </AlertDescription>

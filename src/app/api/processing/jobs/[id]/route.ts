@@ -31,13 +31,13 @@ export async function GET(_: Request, context: RouteContext) {
   const workerConfigured = isWorkerConfigured();
   const note =
     job.sourceType === "authorized_pilot_clip"
-      ? "This job is linked to an authorized pilot footage intake scaffold. Real storage-backed processing still requires explicit upload and privacy controls."
+      ? "This job is linked to an authorized pilot footage intake. Storage-backed processing requires explicit upload and privacy controls."
       : job.sourceType === "uploaded_video"
-      ? "This is a metadata-only uploaded-video job in the public alpha. Real video execution still belongs in a separate worker service."
-      : "This mock processing job represents the future worker flow using synthetic/public-safe demo inputs only.";
+      ? "This legacy metadata-only job does not contain video. Real video execution belongs in the separate worker service."
+      : "This synthetic sample job exercises the review workflow without video.";
   const limitations = [
     "Mock mode remains the safe default.",
-    "Real video byte upload is still disabled.",
+    "Real video is accepted only by the authorization-gated video endpoint.",
     "Live CCTV and RTSP remain out of scope.",
     "Human review remains required.",
   ];

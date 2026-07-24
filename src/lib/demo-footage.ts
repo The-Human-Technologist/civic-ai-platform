@@ -100,7 +100,7 @@ export const SYNTHETIC_UPLOAD_DEMO_IDS = [
 export const demoFootageLibrary: DemoFootage[] = [
   {
     id: "synthetic-barasat-junction",
-    title: "Synthetic Barasat Junction Demo",
+    title: "Synthetic Barasat Junction Sample",
     type: "synthetic_placeholder",
     locationLabel: "Colony More Junction · Barasat (sample)",
     useCase: "Junction congestion, wrong-way advisory, parking patterns",
@@ -111,7 +111,7 @@ export const demoFootageLibrary: DemoFootage[] = [
     licenseNote: "Project-generated placeholder — no real CCTV.",
     privacyRisk: "low",
     allowedUse: [
-      "Live public demo",
+      "Public prototype walkthrough",
       "Grant walkthroughs",
       "Upload page mock detection flow",
     ],
@@ -132,7 +132,7 @@ export const demoFootageLibrary: DemoFootage[] = [
   },
   {
     id: "synthetic-monsoon-waterlogging",
-    title: "Synthetic Monsoon Waterlogging Demo",
+    title: "Synthetic Monsoon Waterlogging Sample",
     type: "synthetic_placeholder",
     locationLabel: "Nabapally / Hridaypur corridor (sample)",
     useCase: "Standing water, drainage failure hotspots during monsoon",
@@ -149,7 +149,7 @@ export const demoFootageLibrary: DemoFootage[] = [
   },
   {
     id: "synthetic-garbage-overflow",
-    title: "Synthetic Garbage Overflow Demo",
+    title: "Synthetic Garbage Overflow Sample",
     type: "synthetic_placeholder",
     locationLabel: "Champadali market edge (sample)",
     useCase: "Solid waste overflow near markets and drains",

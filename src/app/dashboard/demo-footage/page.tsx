@@ -79,7 +79,7 @@ export default function DemoFootagePage() {
   return (
     <div className="flex w-full min-w-0 flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Demo Footage Library</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Sample Footage Library</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground sm:text-base">
           Metadata catalog for safe civic demos — synthetic placeholders and external source
           candidates. No raw video is bundled in this repository.
@@ -92,7 +92,7 @@ export default function DemoFootagePage() {
           No raw footage in this repository
         </AlertTitle>
         <AlertDescription className="mt-2 text-sm leading-relaxed text-amber-900/90 dark:text-amber-100/90">
-          This repository does not include raw footage. Demo entries are metadata, placeholders, or
+          This repository does not include raw footage. Sample entries are metadata, placeholders, or
           external source references only. Use licensed, synthetic, or officially authorized footage.
           Do not scrape CCTV streams. See{" "}
           <Link
@@ -313,7 +313,7 @@ function FootageCard({ entry }: { entry: DemoFootage }) {
               className="w-full sm:w-auto"
             >
               <Play className="size-4" data-icon="inline-start" />
-              Use in Mock Demo
+              Use Synthetic Sample
             </LinkButton>
           </div>
         )}

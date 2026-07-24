@@ -61,6 +61,10 @@ class ProcessingDetectionModel(BaseModel):
     boundingBox: Optional[BoundingBox] = None
     privacyMasked: bool = True
     humanReviewStatus: HumanReviewStatus = "pending"
+    modelLabel: Optional[str] = None
+    trackId: Optional[int] = None
+    evidenceImageDataUrl: Optional[str] = None
+    evidencePersisted: bool = False
 
 
 class DemoJobRequest(BaseModel):
@@ -83,7 +87,14 @@ class WorkerJobResponse(BaseModel):
     jobId: str
     status: ProcessingJobStatus
     progress: int = Field(ge=0, le=100)
-    detections: list[ProcessingDetectionModel] = []
-    limitations: list[str] = []
+    detections: list[ProcessingDetectionModel] = Field(default_factory=list)
+    limitations: list[str] = Field(default_factory=list)
     note: str
     error: Optional[str] = None
+    modelName: Optional[str] = None
+    device: Optional[str] = None
+    realInferenceEnabled: bool = False
+    framesAnalyzed: int = 0
+    processingMs: int = 0
+    objectsDetected: int = 0
+    classCounts: dict[str, int] = Field(default_factory=dict)

@@ -11,7 +11,7 @@ export function DashboardPilotBanner() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className="border-white/20 bg-white/15 text-primary-foreground hover:bg-white/15">
-              Live Pilot Demo
+              Working Pilot Prototype
             </Badge>
             <Badge variant="outline" className="border-white/30 text-primary-foreground">
               WB-N24-BRS-2026

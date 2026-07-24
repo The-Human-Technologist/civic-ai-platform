@@ -13,7 +13,7 @@ export default function NotFound() {
         <p className="text-sm font-medium text-muted-foreground">404</p>
         <h1 className="mt-2 text-2xl font-bold tracking-tight">Page not found</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          This route does not exist in the {PLATFORM_NAME} demo. Return to the
+          This route does not exist in the {PLATFORM_NAME} prototype. Return to the
           landing page or municipal operations dashboard.
         </p>
       </div>

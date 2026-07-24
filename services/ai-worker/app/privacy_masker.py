@@ -64,3 +64,13 @@ def mask_privacy_regions(
         )
 
     return output
+
+
+def mask_object_regions(frame, boxes: Iterable[dict], *, strict: bool = True):
+    """Conservatively mask whole person/vehicle boxes before evidence leaves the worker.
+
+    This intentionally avoids identity recognition. Masking a larger object region is
+    less visually precise than face/plate detection, but it is fail-closed and safer
+    for an authorized prototype.
+    """
+    return mask_privacy_regions(frame, face_boxes=boxes, strict=strict)

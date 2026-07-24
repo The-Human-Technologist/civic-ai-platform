@@ -65,15 +65,15 @@ export default function LandingPage() {
               A privacy-first analytics platform for{" "}
               <strong className="font-medium text-foreground">West Bengal municipalities and traffic departments</strong>.
               Evaluate a privacy-first workflow for turning authorized footage into human-reviewed
-              civic and road-safety alerts. The public alpha uses synthetic detections; real footage
-              processing is not enabled yet.
+              civic and road-safety alerts. The working prototype runs YOLO26n on authorized
+              uploaded clips through a separate privacy-first AI worker.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <LinkButton size="lg" href="/pilot-proposal">
                 Read Pilot Proposal <ArrowRight className="size-4" data-icon="inline-end" />
               </LinkButton>
               <LinkButton size="lg" variant="outline" href="/dashboard">
-                Live Dashboard Demo
+                Open Prototype Dashboard
               </LinkButton>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
@@ -150,16 +150,16 @@ export default function LandingPage() {
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">The solution</h2>
             <p className="mt-4 text-muted-foreground">
               An open-source civic intelligence workflow designed for authorized municipal video.
-              The current alpha demonstrates detections and routes everything through{" "}
+              The working prototype generates advisory detections and routes everything through{" "}
               <strong className="font-medium text-foreground">mandatory human review</strong> before
               any field action or report.
             </p>
           </div>
           <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Camera, title: "Authorized inputs", text: "Synthetic demos today; controlled uploaded footage is the first pilot target." },
+              { icon: Camera, title: "Authorized inputs", text: "Real analysis accepts authorized uploaded clips; synthetic samples are kept separate." },
               { icon: ShieldCheck, title: "Human review first", text: "Every alert confirmed or rejected by officials." },
-              { icon: FileSearch, title: "Review records", text: "Timestamped mock detections demonstrate the future evidence-review flow." },
+              { icon: FileSearch, title: "Review records", text: "Timestamped model signals and privacy-masked evidence support official review." },
               { icon: Eye, title: "Privacy-first", text: "No facial recognition; masking must happen before pilot evidence is stored." },
             ].map(({ icon: Icon, title, text }) => (
               <Card key={title}>
@@ -180,8 +180,9 @@ export default function LandingPage() {
       <section id="modules" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Detection modules</h2>
         <p className="mt-4 max-w-2xl text-muted-foreground">
-          Planned road-safety and civic detection capabilities, represented by synthetic outputs in
-          the public alpha. Every output remains an estimate pending human verification.
+          The general model currently detects people and vehicles and produces congestion
+          advisories. Specialist modules require evaluated custom weights. Every output remains an
+          estimate pending human verification.
         </p>
         <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {DETECTION_MODULES.map(({ title, icon: Icon }) => (
@@ -204,8 +205,8 @@ export default function LandingPage() {
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">How it works</h2>
           <ol className="mt-10 grid gap-6 md:grid-cols-4">
             {[
-              ["Choose a safe input", "Use synthetic scenarios now; authorized uploaded clips are planned for a controlled pilot."],
-              ["Generate detections", "Mock AI currently produces confidence-scored events; evaluated CV models come later."],
+              ["Choose a safe input", "Select an authorized or licensed uploaded clip and record its authorization reference."],
+              ["Generate detections", "YOLO26n analyzes sampled frames locally and removes the source clip after processing."],
               ["Human review", "Officials confirm, reject, or mark for field verification."],
               ["Reports & action", "Generate pilot reports and evidence packs for departments."],
             ].map(([title, text], i) => (
@@ -262,10 +263,10 @@ export default function LandingPage() {
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {[
               "No facial recognition enabled by default",
-              "Face blurring required before future evidence persistence (pipeline integration planned)",
-              "Number plate masking required for future pilot evidence",
-              "30-day intake retention default (automatic deletion planned)",
-              "Immutable server audit logs planned; demo review metadata stays local",
+              "Whole people and vehicles masked before evidence leaves the worker",
+              "Source clips and decoded frames deleted immediately after inference",
+              "Persistent footage storage remains off by default",
+              "Server audit hardening remains required before a multi-user deployment",
               "Human review required before any external action",
             ].map((item) => (
               <div key={item} className="flex items-start gap-3">
@@ -285,10 +286,10 @@ export default function LandingPage() {
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-4 py-16 text-center sm:px-6">
         <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Ready to explore the pilot demo?
+          Ready to run the working prototype?
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-          Upload sample footage or use Barasat demo feeds. Review detections in the dashboard and
+          Upload authorized footage for real YOLO analysis, review advisory detections, and
           generate a printable pilot report.
         </p>
         <LinkButton size="lg" className="mt-8" href="/pilot-proposal">

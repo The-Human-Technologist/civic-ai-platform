@@ -63,7 +63,7 @@ export default function OpenGraphImage() {
         >
           <span>Municipal dashboard</span>
           <span>·</span>
-          <span>Mock MVP demo</span>
+          <span>Privacy-first YOLO prototype</span>
           <span>·</span>
           <span>AGPL-3.0</span>
         </div>

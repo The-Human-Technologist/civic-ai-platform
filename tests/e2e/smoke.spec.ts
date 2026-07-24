@@ -66,11 +66,11 @@ test("unsafe processing and footage requests fail closed", async ({ request }) =
   expect(missingAuthorizationReference.status()).toBe(400);
 });
 
-test("public alpha safety language remains visible", async ({ page }) => {
+test("prototype safety language remains visible", async ({ page }) => {
   await page.goto("/dashboard/upload");
-  const safetyAlert = page.getByRole("alert").filter({ hasText: "Public alpha limitations" });
+  const safetyAlert = page.getByRole("alert").filter({ hasText: "Prototype safeguards" });
   await expect(safetyAlert).toBeVisible();
-  await expect(safetyAlert).toContainText("Mock AI is default");
+  await expect(safetyAlert).toContainText("Authorized uploaded clips only");
   await expect(safetyAlert).toContainText("No facial recognition");
-  await expect(safetyAlert).toContainText("human review required");
+  await expect(safetyAlert).toContainText("pending human review");
 });

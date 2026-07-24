@@ -61,7 +61,7 @@ export function LandingNav({ variant = "home" }: LandingNavProps) {
             Dashboard
           </LinkButton>
           <LinkButton size="sm" href="/dashboard/upload">
-            Start Pilot Demo
+            Start Prototype
           </LinkButton>
         </div>
       </div>

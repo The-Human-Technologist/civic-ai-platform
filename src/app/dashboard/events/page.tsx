@@ -251,7 +251,8 @@ export default function EventsPage() {
       )}
 
       <p className="text-xs text-muted-foreground">
-        Showing {filtered.length} of {events.length} events · Mock detections — human review required
+        Showing {filtered.length} of {events.length} events · Real and synthetic sources are labeled
+        · human review required
       </p>
     </div>
   );

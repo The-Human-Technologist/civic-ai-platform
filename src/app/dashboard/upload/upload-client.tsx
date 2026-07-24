@@ -27,6 +27,7 @@ import {
   getProcessingJob,
   getWorkerHealth,
   pollProcessingJob,
+  processAuthorizedVideo,
 } from "@/lib/processing/client";
 import { processingDetectionsToReviewEvents } from "@/lib/processing/to-review-events";
 import {
@@ -141,12 +142,19 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
   const [activeFeed, setActiveFeed] = useState<string | null>(null);
   const [activeDemoFootage, setActiveDemoFootage] = useState<string | null>(null);
   const [selectedFileMeta, setSelectedFileMeta] = useState<SelectedFileMeta | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [processingConfig, setProcessingConfig] = useState<ProcessingConfig | null>(null);
   const [activeJob, setActiveJob] = useState<ProcessingJob | null>(null);
   const [jobDetections, setJobDetections] = useState<ProcessingDetection[]>([]);
   const [jobNote, setJobNote] = useState<string | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
   const [jobLoading, setJobLoading] = useState(false);
+  const [realRunMeta, setRealRunMeta] = useState<{
+    modelName?: string;
+    device?: string;
+    objectsDetected?: number;
+    classCounts?: Record<string, number>;
+  } | null>(null);
   const [workerHealth, setWorkerHealth] = useState<WorkerHealthResponse | null>(null);
   const [workerHealthLoading, setWorkerHealthLoading] = useState(false);
   const [intakeDraft, setIntakeDraft] = useState<IntakeDraft>({
@@ -205,6 +213,22 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function loadWorkerHealth() {
+      try {
+        const result = await getWorkerHealth();
+        if (!cancelled) setWorkerHealth(result);
+      } catch {
+        if (!cancelled) setWorkerHealth(null);
+      }
+    }
+    void loadWorkerHealth();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const runPipeline = useCallback(
     async (source: {
       fileName?: string;
@@ -241,7 +265,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
     [addEvents],
   );
 
-  async function handleFileChange(file: File | null) {
+  function handleFileChange(file: File | null) {
     if (!file) return;
     if (!file.type.startsWith("video/")) {
       toast.error("Please select a video file");
@@ -252,11 +276,71 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
       size: file.size,
       type: file.type,
     });
+    setSelectedFile(file);
     setFileName(file.name);
     setActiveFeed(null);
     setActiveDemoFootage(null);
     setLastResult(null);
-    await runPipeline({ fileName: file.name, fileSize: file.size });
+    setStage("idle");
+    toast.success("Authorized clip selected. Confirm the location and authorization before analysis.");
+  }
+
+  async function handleRealVideoProcessing() {
+    if (!selectedFile) {
+      toast.error("Choose an authorized video clip first");
+      return;
+    }
+    if (!intakeDraft.locationLabel.trim()) {
+      toast.error("Enter the footage location");
+      return;
+    }
+    if (!intakeDraft.writtenAuthorizationAvailable || !intakeDraft.authorizationReference.trim()) {
+      toast.error("Confirm authorization and enter its reference");
+      return;
+    }
+    setJobLoading(true);
+    setJobError(null);
+    setJobNote(null);
+    setRealRunMeta(null);
+    setStage("uploading");
+    try {
+      const result = await processAuthorizedVideo({
+        file: selectedFile,
+        locationLabel: intakeDraft.locationLabel.trim(),
+        authorizationReference: intakeDraft.authorizationReference.trim(),
+        authorizationConfirmed: intakeDraft.writtenAuthorizationAvailable,
+      });
+      setStage("processing");
+      setActiveJob(result.job);
+      const detections = result.detections ?? [];
+      setJobDetections(detections);
+      setJobNote(result.note ?? null);
+      setRealRunMeta({
+        modelName: result.modelName,
+        device: result.device,
+        objectsDetected: result.objectsDetected,
+        classCounts: result.classCounts,
+      });
+      setLastResult({
+        count: detections.length,
+        frames: result.framesAnalyzed ?? 0,
+        ms: result.processingMs ?? 0,
+      });
+      syncDetectionsToHumanReview(result.job, detections);
+      setStage("complete");
+      toast.success(
+        detections.length
+          ? `${detections.length} real AI alerts added for human review`
+          : "Real AI analysis completed; no civic alert threshold was met",
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Real video processing failed";
+      setJobError(message);
+      setStage("error");
+      toast.error(message);
+    } finally {
+      setJobLoading(false);
+    }
   }
 
   async function handleDemoFeed(feedId: string, name: string) {
@@ -333,51 +417,6 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
       toast.success(`Processing job ${finalResult.job.id} created`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to create processing job";
-      setJobError(message);
-      toast.error(message);
-    } finally {
-      setJobLoading(false);
-    }
-  }
-
-  async function handleCreateMetadataOnlyJob() {
-    if (!selectedFileMeta) {
-      toast.error("Choose a file first to capture metadata");
-      return;
-    }
-
-    setJobLoading(true);
-    setJobError(null);
-    setLastResult(null);
-    try {
-      const requestedMode: ProcessingMode =
-        processingConfig?.aiProcessingMode === "worker" && processingConfig.workerModeEnabled
-          ? "worker"
-          : "mock";
-
-      const created = await createProcessingJob({
-        sourceType: "uploaded_video",
-        videoName: selectedFileMeta.name,
-        locationLabel: "Metadata-only upload foundation",
-        selectedScenario: `${selectedFileMeta.type} · ${Math.round(selectedFileMeta.size / 1024)} KB`,
-        requestedMode,
-      });
-      setActiveJob(created.job);
-      setJobDetections(created.detections ?? []);
-      setJobNote(created.note ?? null);
-
-      const finalResult = await pollProcessingJob(created.job.id, {
-        intervalMs: 700,
-        timeoutMs: requestedMode === "mock" ? 4000 : 2500,
-      }).catch(async () => syncJob(created.job.id));
-
-      setActiveJob(finalResult.job);
-      setJobDetections(finalResult.detections ?? []);
-      setJobNote(finalResult.note ?? created.note ?? null);
-      syncDetectionsToHumanReview(finalResult.job, finalResult.detections ?? []);
-      toast.success(`Metadata-only job ${finalResult.job.id} created`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to create metadata-only job";
       setJobError(message);
       toast.error(message);
     } finally {
@@ -512,10 +551,9 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
     <div className="flex w-full min-w-0 flex-col gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Video Upload &amp; Demo Feeds</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Authorized Video Intelligence</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Upload CCTV footage or select Barasat pilot demo feeds. AI detections are simulated for
-            MVP.
+            Run privacy-first YOLO analysis on authorized footage and send advisory alerts to human review.
           </p>
         </div>
         <Link
@@ -523,7 +561,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
           className="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-primary hover:underline"
         >
           <Film className="size-4" />
-          Browse Demo Footage Library
+          Browse Sample Footage Library
         </Link>
       </div>
 
@@ -531,17 +569,16 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         variant="outline"
         className="w-fit border-amber-500/60 bg-amber-500/5 text-amber-900 dark:text-amber-200"
       >
-        Demo mode: uploaded files are not processed by real AI in this MVP. Detections are
-        synthetic. Use only licensed or authorized footage.
+        Prototype rule: real AI accepts authorized uploaded clips only. No facial recognition,
+        live surveillance, or automatic enforcement.
       </Badge>
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base">Phase 2 real-processing foundation</CardTitle>
+          <CardTitle className="text-base">Real-processing prototype</CardTitle>
           <CardDescription>
-            The public demo uses mock AI by default. Guarded frame-extraction and masking helpers
-            now exist, but real footage remains disabled until authenticated storage, evaluated
-            masking, queueing, and legal approval are in place.
+            YOLO26n processes locally through the separate AI worker. People and vehicles are
+            conservatively masked in evidence images; every alert requires human confirmation.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm">
@@ -555,28 +592,28 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
             </div>
           ) : null}
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
-            <span>Mock processing</span>
-            <Badge variant="default">Available now</Badge>
+            <span>Real authorized-video inference</span>
+            <Badge variant="default">Implemented</Badge>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
             <span>MongoDB job schema</span>
             <Badge variant="secondary">Foundation added</Badge>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
-            <span>Worker API scaffold</span>
-            <Badge variant="secondary">Foundation added</Badge>
+            <span>Worker API</span>
+            <Badge variant="secondary">Operational</Badge>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
             <span>FFmpeg/OpenCV frame extraction</span>
             <Badge variant="secondary">Guarded local utility</Badge>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
-            <span>YOLO/OpenCV inference</span>
-            <Badge variant="outline">Planned</Badge>
+            <span>YOLO26n / OpenCV inference</span>
+            <Badge variant="default">Implemented</Badge>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
-            <span>Face/plate masking</span>
-            <Badge variant="secondary">Fail-closed utility; detector wiring planned</Badge>
+            <span>Privacy-safe evidence</span>
+            <Badge variant="secondary">Whole person/vehicle masking</Badge>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-3 py-2">
             <span>Live CCTV/RTSP</span>
@@ -587,20 +624,19 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base">Processing job foundation</CardTitle>
+          <CardTitle className="text-base">Processing and review pipeline</CardTitle>
           <CardDescription>
-            This public alpha still runs mock AI by default. Phase 2A adds a safe job API
-            foundation for future authorized uploaded-video processing. Real video processing
-            requires a separate worker and authorized footage.
+            Real video analysis runs in the local worker. Synthetic samples remain available only
+            for explaining the review workflow without using footage.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <Alert>
             <Info className="size-4" />
-            <AlertTitle>Public alpha limitations</AlertTitle>
+            <AlertTitle>Prototype safeguards</AlertTitle>
             <AlertDescription>
-              Mock AI is default. Real video bytes are not uploaded yet. Worker mode is scaffolded.
-              No facial recognition, no automatic challan, human review required.
+              Authorized uploaded clips only. No facial recognition, live CCTV, or automatic
+              challan. Every output is an advisory pending human review.
             </AlertDescription>
           </Alert>
 
@@ -608,57 +644,18 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
             <div className="rounded-lg border p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="font-medium">Synthetic demo job</p>
+                  <p className="font-medium">Synthetic sample job</p>
                   <p className="text-sm text-muted-foreground">
-                    Create a mock processing job for {preselectedDemo.title}.
+                    Exercise the review workflow for {preselectedDemo.title}.
                   </p>
                 </div>
                 <Button onClick={handleCreateSyntheticJob} disabled={jobLoading}>
                   {jobLoading ? <Loader2 className="size-4 animate-spin" data-icon="inline-start" /> : null}
-                  Create mock processing job
+                  Create sample processing job
                 </Button>
               </div>
             </div>
           ) : null}
-
-          <div className="rounded-lg border p-4">
-            <div className="flex flex-col gap-2">
-              <p className="font-medium">Metadata-only upload job</p>
-              <p className="text-sm text-muted-foreground">
-                Real upload is not enabled in public alpha. This creates a metadata-only processing
-                job for workflow testing.
-              </p>
-              {selectedFileMeta ? (
-                <div className="rounded-lg bg-muted/20 p-3 text-sm text-muted-foreground">
-                  <p>
-                    <span className="font-medium text-foreground">File:</span> {selectedFileMeta.name}
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">Type:</span> {selectedFileMeta.type}
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">Size:</span>{" "}
-                    {(selectedFileMeta.size / (1024 * 1024)).toFixed(2)} MB
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Choose any local video file first. The file bytes stay local; only metadata is
-                  sent to the job API.
-                </p>
-              )}
-              <div>
-                <Button
-                  variant="outline"
-                  disabled={!selectedFileMeta || jobLoading}
-                  onClick={handleCreateMetadataOnlyJob}
-                >
-                  {jobLoading ? <Loader2 className="size-4 animate-spin" data-icon="inline-start" /> : null}
-                  Create metadata-only job
-                </Button>
-              </div>
-            </div>
-          </div>
 
           {(activeJob || jobError || jobNote) && (
             <div className="rounded-lg border p-4">
@@ -750,8 +747,8 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         <CardHeader>
           <CardTitle className="text-base">Worker mode status</CardTitle>
           <CardDescription>
-            Worker routing is feature-flagged. Mock mode remains the safe default, and real video
-            upload stays disabled in the public alpha.
+            The local worker performs real YOLO inference. The hosted frontend requires a reachable
+            worker URL for real processing.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -766,10 +763,12 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
                 {processingConfig?.workerConfigured ? "yes" : "no"}
               </p>
               <p>
-                <span className="font-medium">Real video upload:</span> disabled in public alpha
+                <span className="font-medium">Authorized video:</span>{" "}
+                {processingConfig?.workerModeEnabled ? "enabled" : "worker configuration required"}
               </p>
               <p>
-                <span className="font-medium">Real inference:</span> not enabled yet
+                <span className="font-medium">Real inference:</span>{" "}
+                {workerHealth?.health?.realInferenceEnabled ? "ready" : "check worker"}
               </p>
             </div>
             <div className="rounded-lg border bg-muted/10 p-3 text-sm">
@@ -787,10 +786,17 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
                 <p className="mt-1 text-destructive">{workerHealth.error}</p>
               ) : null}
               {workerHealth?.health ? (
-                <p className="mt-1 text-muted-foreground">
-                  {workerHealth.health.service} · mode {workerHealth.health.mode} · real inference{" "}
-                  {workerHealth.health.realInferenceEnabled ? "enabled" : "disabled"}
-                </p>
+                <div className="mt-1 text-muted-foreground">
+                  <p>
+                    {workerHealth.health.service} · {workerHealth.health.modelName ?? "YOLO"} ·{" "}
+                    {workerHealth.health.device ?? "device unknown"}
+                  </p>
+                  <p>
+                    Real inference {workerHealth.health.realInferenceEnabled ? "ready" : "not ready"}
+                    {" "}· privacy masking{" "}
+                    {workerHealth.health.privacyMaskingEnabled === false ? "off" : "on"}
+                  </p>
+                </div>
               ) : null}
             </div>
           </div>
@@ -798,21 +804,24 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
           {processingConfig?.aiProcessingMode === "mock" ? (
             <Alert>
               <Info className="size-4" />
-              <AlertDescription>Public demo is running safely in mock mode.</AlertDescription>
+              <AlertDescription>
+                Sample mode is active. Set AI_PROCESSING_MODE=worker and AI_WORKER_URL to enable
+                authorized-video inference.
+              </AlertDescription>
             </Alert>
           ) : workerHealth?.online ? (
             <Alert>
               <Info className="size-4" />
               <AlertDescription>
-                Worker connector is active for demo jobs. Real video bytes are still disabled.
+                Worker is online. Real authorized-video processing is available.
               </AlertDescription>
             </Alert>
           ) : (
             <Alert>
               <Info className="size-4" />
               <AlertDescription>
-                Worker mode is enabled but the worker may be offline. The public mock workflow
-                should remain usable.
+                Worker mode is enabled but the worker is offline. Start the FastAPI worker before
+                the police walkthrough.
               </AlertDescription>
             </Alert>
           )}
@@ -832,13 +841,12 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         </CardContent>
       </Card>
 
-      <Card className="shadow-sm">
+      <Card className="hidden">
         <CardHeader>
-          <CardTitle className="text-base">Authorized footage intake — pilot scaffold</CardTitle>
+          <CardTitle className="text-base">Authorized footage intake</CardTitle>
           <CardDescription>
-            Real video upload is disabled in the public alpha. For a controlled municipal pilot,
-            authorized footage intake will require written permission, storage configuration,
-            privacy masking, retention limits, and human review.
+            Use this record for controlled municipal storage workflows. Direct prototype analysis
+            above deletes the uploaded clip immediately after inference.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -881,7 +889,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
                 <option value="municipal_uploaded_clip">Municipal uploaded clip</option>
                 <option value="traffic_department_clip">Traffic department clip</option>
                 <option value="ward_office_clip">Ward office clip</option>
-                <option value="synthetic_demo">Synthetic demo</option>
+                <option value="synthetic_demo">Synthetic sample</option>
                 <option value="external_dataset_reference">External dataset reference</option>
               </select>
             </label>
@@ -1070,10 +1078,10 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
       {workerModeEnabled && (
         <Alert>
           <Info className="size-4" />
-          <AlertTitle>Experimental worker mode configured</AlertTitle>
+          <AlertTitle>Real AI worker configured</AlertTitle>
           <AlertDescription>
-            Worker mode is scaffolded only. The public UI still uses mock processing by default,
-            and real uploaded-video execution should happen in a separate backend worker.
+            Authorized uploaded-video execution runs in the separate backend worker. Keep that
+            worker local or behind authenticated network controls.
           </AlertDescription>
         </Alert>
       )}
@@ -1081,17 +1089,17 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
       {invalidDemoParam && (
         <Alert variant="destructive">
           <Info className="size-4" />
-          <AlertTitle>Unknown demo scenario</AlertTitle>
+          <AlertTitle>Unknown sample scenario</AlertTitle>
           <AlertDescription>
-            The demo id <code className="rounded bg-muted px-1">{demoParam}</code> is not a valid
+            The sample id <code className="rounded bg-muted px-1">{demoParam}</code> is not a valid
             synthetic placeholder.{" "}
             <Link
               href="/dashboard/demo-footage"
               className="font-medium underline underline-offset-2"
             >
-              Browse Demo Footage Library
+              Browse Sample Footage Library
             </Link>{" "}
-            for available mock scenarios.
+            for available synthetic scenarios.
           </AlertDescription>
         </Alert>
       )}
@@ -1099,7 +1107,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
       {preselectedDemo && (
         <Card className="border-primary/30 bg-primary/5 shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Selected demo: {preselectedDemo.title}</CardTitle>
+            <CardTitle className="text-base">Selected sample: {preselectedDemo.title}</CardTitle>
             <CardDescription>{preselectedDemo.locationLabel}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
@@ -1124,7 +1132,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
             <Alert className="border-amber-500/40 bg-amber-500/5">
               <Info className="size-4 text-amber-700 dark:text-amber-400" />
               <AlertDescription className="text-sm text-amber-950 dark:text-amber-100">
-                This is a synthetic mock scenario. No real video is processed.
+                This is a synthetic sample scenario. No video is processed.
               </AlertDescription>
             </Alert>
             <Button
@@ -1190,20 +1198,22 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
 
       <Alert>
         <Video className="size-4" />
-        <AlertTitle>Existing footage analytics — target workflow</AlertTitle>
+        <AlertTitle>Existing footage analytics — active prototype workflow</AlertTitle>
         <AlertDescription>
-          The public flow reads file metadata only and generates synthetic detections; video bytes
-          are not analyzed. A controlled pilot would begin with authorized uploaded clips, not live
-          RTSP. {DISCLAIMER}
+          Video is sent only to the configured local worker, analyzed, and deleted immediately.
+          Only privacy-masked evidence images and detection metadata return to the review queue.
+          Authorized uploaded clips only; no live RTSP. {DISCLAIMER}
         </AlertDescription>
       </Alert>
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base">Upload video file</CardTitle>
-          <CardDescription>MP4, WebM, or MOV — file metadata only in demo mode</CardDescription>
+          <CardTitle className="text-base">Run real YOLO analysis</CardTitle>
+          <CardDescription>
+            MP4, WebM, MOV, or AVI · maximum {processingConfig?.maxAuthorizedVideoUploadMb ?? 250} MB
+          </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+        <CardContent className="grid gap-5">
           <input
             ref={fileInputRef}
             type="file"
@@ -1212,7 +1222,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
             onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
           />
           <div
-            className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed bg-muted/30 p-10 text-center"
+            className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed bg-muted/30 p-6 text-center sm:p-10"
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault();
@@ -1228,15 +1238,100 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
             >
               Select video
             </Button>
+            {selectedFileMeta ? (
+              <p className="max-w-full break-all text-xs text-muted-foreground">
+                {selectedFileMeta.name} · {(selectedFileMeta.size / 1024 / 1024).toFixed(2)} MB
+              </p>
+            ) : null}
           </div>
+          <div className="grid gap-4 rounded-xl border bg-muted/10 p-4 sm:grid-cols-2">
+            <label className="grid gap-1.5 text-sm">
+              <span className="font-medium">Footage location</span>
+              <input
+                className="h-10 rounded-md border bg-background px-3"
+                placeholder="e.g. Barasat Station Road"
+                value={intakeDraft.locationLabel}
+                onChange={(event) =>
+                  setIntakeDraft((current) => ({ ...current, locationLabel: event.target.value }))
+                }
+              />
+            </label>
+            <label className="grid gap-1.5 text-sm">
+              <span className="font-medium">Authorization / licence reference</span>
+              <input
+                className="h-10 rounded-md border bg-background px-3"
+                placeholder="Letter, case, owner, or stock licence reference"
+                value={intakeDraft.authorizationReference}
+                onChange={(event) =>
+                  setIntakeDraft((current) => ({
+                    ...current,
+                    authorizationReference: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <label className="flex items-start gap-3 text-sm sm:col-span-2">
+              <input
+                className="mt-1 size-4"
+                type="checkbox"
+                checked={intakeDraft.writtenAuthorizationAvailable}
+                onChange={(event) =>
+                  setIntakeDraft((current) => ({
+                    ...current,
+                    writtenAuthorizationAvailable: event.target.checked,
+                  }))
+                }
+              />
+              <span>
+                I confirm this footage is authorized or properly licensed for analysis, and I accept
+                mandatory human review with no automatic enforcement.
+              </span>
+            </label>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button
+              size="lg"
+              disabled={
+                jobLoading ||
+                !selectedFile ||
+                !intakeDraft.locationLabel.trim() ||
+                !intakeDraft.authorizationReference.trim() ||
+                !intakeDraft.writtenAuthorizationAvailable ||
+                !workerHealth?.online ||
+                !workerHealth.health?.realInferenceEnabled
+              }
+              onClick={handleRealVideoProcessing}
+            >
+              {jobLoading ? <Loader2 className="size-4 animate-spin" data-icon="inline-start" /> : null}
+              Run YOLO26n analysis
+            </Button>
+            {!workerHealth?.online ? (
+              <p className="text-xs text-muted-foreground">
+                Check worker health first. Real analysis requires the local AI worker.
+              </p>
+            ) : null}
+          </div>
+          {realRunMeta ? (
+            <div className="grid gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4 text-sm sm:grid-cols-2">
+              <p><span className="font-medium">Model:</span> {realRunMeta.modelName ?? "YOLO"}</p>
+              <p><span className="font-medium">Device:</span> {realRunMeta.device ?? "unknown"}</p>
+              <p><span className="font-medium">Objects:</span> {realRunMeta.objectsDetected ?? 0}</p>
+              <p className="break-words">
+                <span className="font-medium">Classes:</span>{" "}
+                {Object.entries(realRunMeta.classCounts ?? {})
+                  .map(([name, count]) => `${name} ${count}`)
+                  .join(", ") || "none"}
+              </p>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
       <div>
-        <h2 className="mb-2 text-lg font-semibold">Try with demo footage</h2>
+        <h2 className="mb-2 text-lg font-semibold">Try the synthetic sample workspace</h2>
         <p className="mb-4 text-sm text-muted-foreground">
-          Demo mode uses synthetic metadata only. No real CCTV, stock footage, or public dataset
-          video is bundled in this app.
+          Samples exercise the review workflow without video. They are always visibly separated
+          from real YOLO results.
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {syntheticDemos.map((demo) => (
@@ -1272,7 +1367,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
                   stage !== "complete" ? (
                     <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
                   ) : null}
-                  Run synthetic demo
+                  Run synthetic sample
                 </Button>
               </CardContent>
             </Card>
@@ -1281,13 +1376,13 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         <p className="mt-3 text-xs text-muted-foreground">
           Full catalog:{" "}
           <Link href="/dashboard/demo-footage" className="font-medium text-primary hover:underline">
-            Demo Footage Library
+             Sample Footage Library
           </Link>
         </p>
       </div>
 
       <div>
-        <h2 className="mb-4 text-lg font-semibold">Demo CCTV feeds — Barasat pilot</h2>
+        <h2 className="mb-4 text-lg font-semibold">Synthetic CCTV scenarios — Barasat pilot</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {DEMO_FEEDS.map((feed) => (
             <Card key={feed.id} className="shadow-sm">
@@ -1301,7 +1396,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
               <CardContent className="flex flex-col gap-3">
                 <p className="text-xs leading-relaxed text-muted-foreground">{feed.description}</p>
                 <Badge variant="secondary" className="w-fit">
-                  {feed.status}
+                  {feed.status === "demo" ? "sample" : feed.status}
                 </Badge>
                 <Button
                   size="sm"
@@ -1312,7 +1407,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
                   {activeFeed === feed.id && stage !== "idle" && stage !== "complete" ? (
                     <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
                   ) : null}
-                  Run demo analysis
+                  Run sample analysis
                 </Button>
               </CardContent>
             </Card>
@@ -1325,8 +1420,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         <Link href="/dashboard/data-sources" className="font-medium text-primary hover:underline">
           Data sources &amp; footage policy
         </Link>
-        . Real pilot processing remains feature-flagged and worker-based; the public alpha stays in
-        mock mode by default.
+        . Real processing is worker-based, authorization-gated, privacy-masked, and human-reviewed.
       </p>
     </div>
   );

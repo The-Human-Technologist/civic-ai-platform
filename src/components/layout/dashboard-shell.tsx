@@ -26,7 +26,7 @@ const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/upload", label: "Video & Feeds", icon: Upload },
   { href: "/dashboard/data-sources", label: "Data Sources", icon: Database },
-  { href: "/dashboard/demo-footage", label: "Demo Footage", icon: Film },
+  { href: "/dashboard/demo-footage", label: "Sample Footage", icon: Film },
   { href: "/dashboard/events", label: "Detections", icon: List },
   { href: "/dashboard/map", label: "Hotspots", icon: Map },
   { href: "/dashboard/reports", label: "Pilot Report", icon: FileText },

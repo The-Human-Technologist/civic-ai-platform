@@ -5,6 +5,10 @@ type WorkerHealthPayload = {
   service: string;
   mode: string;
   realInferenceEnabled: boolean;
+  modelName?: string;
+  modelAvailable?: boolean;
+  device?: string;
+  privacyMaskingEnabled?: boolean;
 };
 
 type WorkerProcessPayload = {
@@ -15,6 +19,13 @@ type WorkerProcessPayload = {
   limitations: string[];
   note: string;
   error?: string;
+  modelName?: string;
+  device?: string;
+  realInferenceEnabled: boolean;
+  framesAnalyzed: number;
+  processingMs: number;
+  objectsDetected: number;
+  classCounts: Record<string, number>;
 };
 
 type WorkerCallResult<T> =
@@ -22,6 +33,7 @@ type WorkerCallResult<T> =
   | { ok: false; error: string };
 
 const WORKER_TIMEOUT_MS = 8000;
+const VIDEO_WORKER_TIMEOUT_MS = 5 * 60 * 1000;
 
 function getWorkerUrl(): string | null {
   return process.env.AI_WORKER_URL?.trim() || null;
@@ -35,9 +47,13 @@ export function isWorkerConfigured(): boolean {
   return Boolean(getWorkerUrl());
 }
 
-async function fetchWithTimeout(input: string, init?: RequestInit): Promise<Response> {
+async function fetchWithTimeout(
+  input: string,
+  init?: RequestInit,
+  timeoutMs = WORKER_TIMEOUT_MS,
+): Promise<Response> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), WORKER_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     return await fetch(input, { ...init, signal: controller.signal, cache: "no-store" });
@@ -49,7 +65,7 @@ async function fetchWithTimeout(input: string, init?: RequestInit): Promise<Resp
 async function callWorker<T>(path: string, init?: RequestInit): Promise<WorkerCallResult<T>> {
   const workerUrl = getWorkerUrl();
   if (!workerUrl) {
-    return { ok: false, error: "Worker mode is scaffolded but not enabled in this deployment." };
+    return { ok: false, error: "Worker mode is not enabled in this deployment." };
   }
 
   try {
@@ -81,6 +97,39 @@ async function callWorker<T>(path: string, init?: RequestInit): Promise<WorkerCa
   }
 }
 
+async function callWorkerWithTimeout<T>(
+  path: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<WorkerCallResult<T>> {
+  const workerUrl = getWorkerUrl();
+  if (!workerUrl) return { ok: false, error: "AI worker URL is not configured." };
+  try {
+    const response = await fetchWithTimeout(`${workerUrl}${path}`, init, timeoutMs);
+    const payload = (await response.json().catch(() => ({}))) as T & {
+      error?: string;
+      detail?: string;
+    };
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: payload.error || payload.detail || `Worker request failed (${response.status}).`,
+      };
+    }
+    return { ok: true, data: payload as T };
+  } catch (error) {
+    return {
+      ok: false,
+      error:
+        error instanceof Error && error.name === "AbortError"
+          ? "Video processing timed out after five minutes."
+          : error instanceof Error
+            ? error.message
+            : "AI worker is offline or unreachable.",
+    };
+  }
+}
+
 export async function callWorkerHealth(): Promise<WorkerCallResult<WorkerHealthPayload>> {
   if (!isWorkerModeEnabled()) {
     return { ok: false, error: "Worker mode is not enabled." };
@@ -96,7 +145,7 @@ export async function processDemoJobWithWorker(
     return { ok: false, error: "Worker mode is not enabled." };
   }
 
-  return callWorker<WorkerProcessPayload>("/process-demo-job", {
+  return callWorker<WorkerProcessPayload>("/process-sample-job", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -109,22 +158,24 @@ export async function processDemoJobWithWorker(
   });
 }
 
-export async function processVideoJobWithWorker(
-  job: ProcessingJob,
-): Promise<WorkerCallResult<WorkerProcessPayload>> {
+export async function processAuthorizedVideoWithWorker(input: {
+  job: ProcessingJob;
+  video: File;
+  locationLabel: string;
+  authorizationReference: string;
+}): Promise<WorkerCallResult<WorkerProcessPayload>> {
   if (!isWorkerModeEnabled()) {
-    return { ok: false, error: "Worker mode is not enabled." };
+    return { ok: false, error: "Real worker mode is not enabled." };
   }
-
-  return callWorker<WorkerProcessPayload>("/process-video-job", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jobId: job.id,
-      sourceType: job.sourceType,
-      videoName: job.videoName,
-      locationLabel: job.locationLabel,
-      selectedScenario: job.selectedScenario,
-    }),
-  });
+  const formData = new FormData();
+  formData.set("video", input.video, input.video.name);
+  formData.set("jobId", input.job.id);
+  formData.set("locationLabel", input.locationLabel);
+  formData.set("authorizationReference", input.authorizationReference);
+  formData.set("authorizationConfirmed", "true");
+  return callWorkerWithTimeout<WorkerProcessPayload>(
+    "/process-video",
+    { method: "POST", body: formData },
+    VIDEO_WORKER_TIMEOUT_MS,
+  );
 }
