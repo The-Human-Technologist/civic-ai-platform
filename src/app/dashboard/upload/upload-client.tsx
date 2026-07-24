@@ -35,6 +35,8 @@ import {
   type ProcessingDetection,
   type ProcessingJob,
   type ProcessingMode,
+  type AnalysisModule,
+  type ExpectedDirection,
   type WorkerHealthResponse,
 } from "@/lib/processing/types";
 import type {
@@ -61,6 +63,26 @@ const STAGE_LABELS: Record<ProcessingStage, string> = {
   complete: "Detections generated",
   error: "Error",
 };
+
+const MODULE_OPTIONS: {
+  id: AnalysisModule;
+  title: string;
+  description: string;
+}[] = [
+  { id: "traffic", title: "Traffic density", description: "People, vehicles, and congestion" },
+  { id: "civic", title: "Road & waste", description: "Potholes, road damage, and garbage" },
+  { id: "helmet", title: "Helmet compliance", description: "Helmet / non-helmet specialist model" },
+  {
+    id: "waterlogging",
+    title: "Waterlogging",
+    description: "Experimental open-vocabulary standing-water advisory",
+  },
+  {
+    id: "wrong_way",
+    title: "Wrong-way movement",
+    description: "Tracked vehicles compared with the permitted direction",
+  },
+];
 
 type ProcessingConfig = {
   aiProcessingMode: ProcessingMode;
@@ -154,7 +176,17 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
     device?: string;
     objectsDetected?: number;
     classCounts?: Record<string, number>;
+    modelsUsed?: string[];
+    requestedModules?: AnalysisModule[];
   } | null>(null);
+  const [analysisModules, setAnalysisModules] = useState<AnalysisModule[]>([
+    "traffic",
+    "civic",
+    "helmet",
+    "waterlogging",
+  ]);
+  const [expectedDirection, setExpectedDirection] =
+    useState<ExpectedDirection>("left_to_right");
   const [workerHealth, setWorkerHealth] = useState<WorkerHealthResponse | null>(null);
   const [workerHealthLoading, setWorkerHealthLoading] = useState(false);
   const [intakeDraft, setIntakeDraft] = useState<IntakeDraft>({
@@ -309,6 +341,10 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         locationLabel: intakeDraft.locationLabel.trim(),
         authorizationReference: intakeDraft.authorizationReference.trim(),
         authorizationConfirmed: intakeDraft.writtenAuthorizationAvailable,
+        analysisModules,
+        expectedDirection: analysisModules.includes("wrong_way")
+          ? expectedDirection
+          : undefined,
       });
       setStage("processing");
       setActiveJob(result.job);
@@ -320,6 +356,8 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         device: result.device,
         objectsDetected: result.objectsDetected,
         classCounts: result.classCounts,
+        modelsUsed: result.modelsUsed,
+        requestedModules: result.requestedModules,
       });
       setLastResult({
         count: detections.length,
@@ -567,7 +605,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
 
       <Badge
         variant="outline"
-        className="w-fit border-amber-500/60 bg-amber-500/5 text-amber-900 dark:text-amber-200"
+        className="h-auto max-w-full whitespace-normal border-amber-500/60 bg-amber-500/5 py-1.5 text-left leading-relaxed text-amber-900 dark:text-amber-200"
       >
         Prototype rule: real AI accepts authorized uploaded clips only. No facial recognition,
         live surveillance, or automatic enforcement.
@@ -577,8 +615,9 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         <CardHeader>
           <CardTitle className="text-base">Real-processing prototype</CardTitle>
           <CardDescription>
-            YOLO26n processes locally through the separate AI worker. People and vehicles are
-            conservatively masked in evidence images; every alert requires human confirmation.
+            Traffic, civic, helmet, waterlogging, and tracking models run locally through the
+            separate AI worker. People and vehicles are conservatively masked in evidence images;
+            every alert requires human confirmation.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm">
@@ -747,8 +786,8 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
         <CardHeader>
           <CardTitle className="text-base">Worker mode status</CardTitle>
           <CardDescription>
-            The local worker performs real YOLO inference. The hosted frontend requires a reachable
-            worker URL for real processing.
+          The local worker performs real sequential AI inference. The hosted frontend requires a
+          reachable worker URL for real processing.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -796,6 +835,19 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
                     {" "}· privacy masking{" "}
                     {workerHealth.health.privacyMaskingEnabled === false ? "off" : "on"}
                   </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {Object.entries(workerHealth.health.moduleStatus ?? {}).map(
+                      ([name, status]) => (
+                        <Badge
+                          key={name}
+                          variant={status.available ? "secondary" : "outline"}
+                          className={status.available ? "text-emerald-700 dark:text-emerald-300" : ""}
+                        >
+                          {name.replace("_", " ")}: {status.available ? "ready" : "missing"}
+                        </Badge>
+                      ),
+                    )}
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -1208,7 +1260,7 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base">Run real YOLO analysis</CardTitle>
+          <CardTitle className="text-base">Run real multi-model AI analysis</CardTitle>
           <CardDescription>
             MP4, WebM, MOV, or AVI · maximum {processingConfig?.maxAuthorizedVideoUploadMb ?? 250} MB
           </CardDescription>
@@ -1288,6 +1340,71 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
               </span>
             </label>
           </div>
+          <div className="grid gap-3 rounded-xl border bg-muted/10 p-4">
+            <div>
+              <p className="text-sm font-medium">AI analysis modules</p>
+              <p className="text-xs text-muted-foreground">
+                Models run sequentially to stay within the RTX 3050&apos;s 4 GB VRAM.
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {MODULE_OPTIONS.map((module) => {
+                const ready = workerHealth?.health?.moduleStatus?.[module.id]?.available ?? false;
+                const checked = analysisModules.includes(module.id);
+                return (
+                  <label
+                    key={module.id}
+                    className="flex min-w-0 items-start gap-3 rounded-lg border bg-background p-3 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mt-1 size-4"
+                      checked={checked}
+                      disabled={workerHealth?.online === true && !ready}
+                      onChange={(event) =>
+                        setAnalysisModules((current) =>
+                          event.target.checked
+                            ? [...current, module.id]
+                            : current.filter((value) => value !== module.id),
+                        )
+                      }
+                    />
+                    <span className="min-w-0">
+                      <span className="flex flex-wrap items-center gap-1.5 font-medium">
+                        {module.title}
+                        <Badge variant={ready ? "secondary" : "outline"} className="text-[10px]">
+                          {ready ? "ready" : "check"}
+                        </Badge>
+                      </span>
+                      <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+                        {module.description}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            {analysisModules.includes("wrong_way") ? (
+              <label className="grid max-w-md gap-1.5 text-sm">
+                <span className="font-medium">Permitted direction in this camera view</span>
+                <select
+                  className="h-10 rounded-md border bg-background px-3"
+                  value={expectedDirection}
+                  onChange={(event) =>
+                    setExpectedDirection(event.target.value as ExpectedDirection)
+                  }
+                >
+                  <option value="left_to_right">Left to right</option>
+                  <option value="right_to_left">Right to left</option>
+                  <option value="top_to_bottom">Top to bottom</option>
+                  <option value="bottom_to_top">Bottom to top</option>
+                </select>
+                <span className="text-xs text-muted-foreground">
+                  This is a per-camera calibration input, not an automatic legal conclusion.
+                </span>
+              </label>
+            ) : null}
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button
               size="lg"
@@ -1297,13 +1414,14 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
                 !intakeDraft.locationLabel.trim() ||
                 !intakeDraft.authorizationReference.trim() ||
                 !intakeDraft.writtenAuthorizationAvailable ||
+                analysisModules.length === 0 ||
                 !workerHealth?.online ||
                 !workerHealth.health?.realInferenceEnabled
               }
               onClick={handleRealVideoProcessing}
             >
               {jobLoading ? <Loader2 className="size-4 animate-spin" data-icon="inline-start" /> : null}
-              Run YOLO26n analysis
+              Run multi-model analysis
             </Button>
             {!workerHealth?.online ? (
               <p className="text-xs text-muted-foreground">
@@ -1316,6 +1434,10 @@ function UploadPageContent({ workerModeEnabled }: { workerModeEnabled: boolean }
               <p><span className="font-medium">Model:</span> {realRunMeta.modelName ?? "YOLO"}</p>
               <p><span className="font-medium">Device:</span> {realRunMeta.device ?? "unknown"}</p>
               <p><span className="font-medium">Objects:</span> {realRunMeta.objectsDetected ?? 0}</p>
+              <p className="break-words">
+                <span className="font-medium">Models:</span>{" "}
+                {realRunMeta.modelsUsed?.join(", ") || realRunMeta.modelName || "none"}
+              </p>
               <p className="break-words">
                 <span className="font-medium">Classes:</span>{" "}
                 {Object.entries(realRunMeta.classCounts ?? {})

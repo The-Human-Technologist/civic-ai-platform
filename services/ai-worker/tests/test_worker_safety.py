@@ -9,7 +9,13 @@ if str(WORKER_ROOT) not in sys.path:
     sys.path.insert(0, str(WORKER_ROOT))
 
 from app.frame_extractor import extract_frames_with_opencv
-from app.detectors import CIVIC_LABEL_MAP, COCO_VEHICLES
+from app.detectors import (
+    CIVIC_LABEL_MAP,
+    COCO_VEHICLES,
+    helmet_label_is_violation,
+    movement_opposes_direction,
+    normalize_model_label,
+)
 from app.privacy_masker import (
     PrivacyMaskingError,
     mask_object_regions,
@@ -48,8 +54,38 @@ class WorkerSafetyTests(unittest.TestCase):
 
     def test_specialist_labels_are_explicit(self):
         self.assertEqual(CIVIC_LABEL_MAP["pothole"], "pothole")
-        self.assertEqual(CIVIC_LABEL_MAP["water"], "waterlogging")
+        self.assertEqual(CIVIC_LABEL_MAP["garbage"], "garbage_overflow")
+        self.assertEqual(CIVIC_LABEL_MAP["road_damage"], "road_blockage")
         self.assertNotIn("helmet", CIVIC_LABEL_MAP)
+
+    def test_helmet_label_normalization(self):
+        self.assertEqual(normalize_model_label("non-Helmet-"), "non_helmet")
+        self.assertTrue(helmet_label_is_violation("non-Helmet-"))
+        self.assertFalse(helmet_label_is_violation("accept-Helmet-"))
+
+    def test_wrong_way_horizontal_direction(self):
+        self.assertTrue(
+            movement_opposes_direction(
+                (0.8, 0.5), (0.5, 0.5), "left_to_right", 0.08
+            )
+        )
+        self.assertFalse(
+            movement_opposes_direction(
+                (0.2, 0.5), (0.5, 0.5), "left_to_right", 0.08
+            )
+        )
+
+    def test_wrong_way_vertical_direction_and_jitter(self):
+        self.assertTrue(
+            movement_opposes_direction(
+                (0.5, 0.8), (0.5, 0.6), "top_to_bottom", 0.08
+            )
+        )
+        self.assertFalse(
+            movement_opposes_direction(
+                (0.5, 0.5), (0.51, 0.53), "bottom_to_top", 0.08
+            )
+        )
 
     def test_vehicle_allowlist_is_bounded(self):
         self.assertIn("car", COCO_VEHICLES)

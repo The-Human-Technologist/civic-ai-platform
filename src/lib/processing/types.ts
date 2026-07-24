@@ -22,9 +22,31 @@ export const CIVIC_DETECTION_CLASSES = [
   "road_blockage",
   "congestion",
   "wrong_way_driving",
+  "helmet_violation",
   "unknown",
 ] as const;
 export type CivicDetectionClass = (typeof CIVIC_DETECTION_CLASSES)[number];
+export const ANALYSIS_MODULES = [
+  "traffic",
+  "civic",
+  "helmet",
+  "waterlogging",
+  "wrong_way",
+] as const;
+export type AnalysisModule = (typeof ANALYSIS_MODULES)[number];
+export type ExpectedDirection =
+  | "left_to_right"
+  | "right_to_left"
+  | "top_to_bottom"
+  | "bottom_to_top";
+
+export interface ModelModuleStatus {
+  available: boolean;
+  modelName?: string;
+  classes: string[];
+  experimental?: boolean;
+  note?: string;
+}
 
 export type ProcessingSourceType =
   | "synthetic_demo"
@@ -130,6 +152,9 @@ export interface ProcessingJobResponse {
   realInferenceEnabled?: boolean;
   objectsDetected?: number;
   classCounts?: Record<string, number>;
+  modelsUsed?: string[];
+  requestedModules?: AnalysisModule[];
+  moduleStatus?: Record<string, ModelModuleStatus>;
 }
 
 export interface WorkerHealthResponse {
@@ -145,6 +170,7 @@ export interface WorkerHealthResponse {
     modelAvailable?: boolean;
     device?: string;
     privacyMaskingEnabled?: boolean;
+    moduleStatus?: Record<string, ModelModuleStatus>;
   };
   error?: string;
 }
@@ -154,4 +180,6 @@ export interface ProcessAuthorizedVideoInput {
   locationLabel: string;
   authorizationReference: string;
   authorizationConfirmed: boolean;
+  analysisModules: AnalysisModule[];
+  expectedDirection?: ExpectedDirection;
 }

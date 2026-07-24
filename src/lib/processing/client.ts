@@ -61,6 +61,10 @@ export async function processAuthorizedVideo(
   formData.set("locationLabel", input.locationLabel);
   formData.set("authorizationReference", input.authorizationReference);
   formData.set("authorizationConfirmed", String(input.authorizationConfirmed));
+  formData.set("analysisModules", input.analysisModules.join(","));
+  if (input.expectedDirection) {
+    formData.set("expectedDirection", input.expectedDirection);
+  }
   const response = await fetch("/api/processing/video", {
     method: "POST",
     body: formData,

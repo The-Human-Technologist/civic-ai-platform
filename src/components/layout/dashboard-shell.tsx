@@ -92,8 +92,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="dashboard-topbar flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 lg:px-6">
-          <div className="flex items-center gap-3">
+        <header className="dashboard-topbar flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background px-3 sm:px-4 lg:px-6">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Sheet>
               <SheetTrigger
                 className="lg:hidden"
@@ -115,17 +115,23 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 </div>
               </SheetContent>
             </Sheet>
-            <div>
-              <p className="text-sm font-medium">Barasat Municipality Pilot</p>
-              <p className="text-xs text-muted-foreground">{PILOT_SUBTITLE}</p>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-medium sm:text-sm">
+                <span className="sm:hidden">Barasat Pilot</span>
+                <span className="hidden sm:inline">Barasat Municipality Pilot</span>
+              </p>
+              <p className="hidden truncate text-xs text-muted-foreground md:block">
+                {PILOT_SUBTITLE}
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <LinkButton variant="outline" size="sm" href="/pilot-proposal">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <LinkButton variant="outline" size="sm" href="/pilot-proposal" className="px-2 sm:px-3">
               Proposal
             </LinkButton>
-            <LinkButton variant="outline" size="sm" href="/">
-              Public site
+            <LinkButton variant="outline" size="sm" href="/" className="px-2 sm:px-3">
+              <span className="sm:hidden">Site</span>
+              <span className="hidden sm:inline">Public site</span>
             </LinkButton>
           </div>
         </header>

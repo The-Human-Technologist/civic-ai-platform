@@ -1,4 +1,10 @@
-import type { ProcessingDetection, ProcessingJob } from "@/lib/processing/types";
+import type {
+  AnalysisModule,
+  ExpectedDirection,
+  ModelModuleStatus,
+  ProcessingDetection,
+  ProcessingJob,
+} from "@/lib/processing/types";
 
 type WorkerHealthPayload = {
   ok: boolean;
@@ -9,6 +15,7 @@ type WorkerHealthPayload = {
   modelAvailable?: boolean;
   device?: string;
   privacyMaskingEnabled?: boolean;
+  moduleStatus?: Record<string, ModelModuleStatus>;
 };
 
 type WorkerProcessPayload = {
@@ -26,6 +33,9 @@ type WorkerProcessPayload = {
   processingMs: number;
   objectsDetected: number;
   classCounts: Record<string, number>;
+  modelsUsed: string[];
+  requestedModules: AnalysisModule[];
+  moduleStatus: Record<string, ModelModuleStatus>;
 };
 
 type WorkerCallResult<T> =
@@ -163,6 +173,8 @@ export async function processAuthorizedVideoWithWorker(input: {
   video: File;
   locationLabel: string;
   authorizationReference: string;
+  analysisModules: AnalysisModule[];
+  expectedDirection?: ExpectedDirection;
 }): Promise<WorkerCallResult<WorkerProcessPayload>> {
   if (!isWorkerModeEnabled()) {
     return { ok: false, error: "Real worker mode is not enabled." };
@@ -173,6 +185,10 @@ export async function processAuthorizedVideoWithWorker(input: {
   formData.set("locationLabel", input.locationLabel);
   formData.set("authorizationReference", input.authorizationReference);
   formData.set("authorizationConfirmed", "true");
+  formData.set("analysisModules", input.analysisModules.join(","));
+  if (input.expectedDirection) {
+    formData.set("expectedDirection", input.expectedDirection);
+  }
   return callWorkerWithTimeout<WorkerProcessPayload>(
     "/process-video",
     { method: "POST", body: formData },

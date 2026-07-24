@@ -8,6 +8,11 @@ import {
   isWorkerModeEnabled,
   processAuthorizedVideoWithWorker,
 } from "@/lib/processing/worker-client";
+import {
+  ANALYSIS_MODULES,
+  type AnalysisModule,
+  type ExpectedDirection,
+} from "@/lib/processing/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -43,6 +48,16 @@ export async function POST(request: Request) {
   const locationLabel = textValue(data, "locationLabel");
   const authorizationReference = textValue(data, "authorizationReference");
   const authorizationConfirmed = textValue(data, "authorizationConfirmed") === "true";
+  const analysisModules = textValue(data, "analysisModules")
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value): value is AnalysisModule =>
+      ANALYSIS_MODULES.includes(value as AnalysisModule),
+    );
+  const expectedDirectionValue = textValue(data, "expectedDirection");
+  const expectedDirection = expectedDirectionValue
+    ? (expectedDirectionValue as ExpectedDirection)
+    : undefined;
   if (!(video instanceof File) || video.size === 0) {
     return NextResponse.json({ error: "A non-empty video file is required." }, { status: 400 });
   }
@@ -60,6 +75,24 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "Confirm authorization and provide an authorization or licence reference." },
       { status: 403 },
+    );
+  }
+  if (analysisModules.length === 0) {
+    return NextResponse.json({ error: "Select at least one analysis module." }, { status: 400 });
+  }
+  const validDirections = new Set<ExpectedDirection>([
+    "left_to_right",
+    "right_to_left",
+    "top_to_bottom",
+    "bottom_to_top",
+  ]);
+  if (expectedDirection && !validDirections.has(expectedDirection)) {
+    return NextResponse.json({ error: "Invalid expected travel direction." }, { status: 400 });
+  }
+  if (analysisModules.includes("wrong_way") && !expectedDirection) {
+    return NextResponse.json(
+      { error: "Choose the permitted travel direction for wrong-way analysis." },
+      { status: 400 },
     );
   }
 
@@ -81,6 +114,8 @@ export async function POST(request: Request) {
     video,
     locationLabel,
     authorizationReference,
+    analysisModules,
+    expectedDirection,
   });
 
   if (!result.ok) {
@@ -113,5 +148,8 @@ export async function POST(request: Request) {
     processingMs: result.data.processingMs,
     objectsDetected: result.data.objectsDetected,
     classCounts: result.data.classCounts,
+    modelsUsed: result.data.modelsUsed,
+    requestedModules: result.data.requestedModules,
+    moduleStatus: result.data.moduleStatus,
   });
 }

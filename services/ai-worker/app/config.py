@@ -12,6 +12,26 @@ class Settings(BaseSettings):
     yolo_device: str = Field(default="auto", alias="YOLO_DEVICE")
     yolo_image_size: int = Field(default=640, alias="YOLO_IMAGE_SIZE")
     yolo_confidence: float = Field(default=0.35, alias="YOLO_CONFIDENCE")
+    civic_model_path: str = Field(
+        default="models/civic-road-issues.pt", alias="CIVIC_MODEL_PATH"
+    )
+    civic_confidence: float = Field(default=0.3, alias="CIVIC_CONFIDENCE")
+    helmet_model_path: str = Field(
+        default="models/helmet-candidate.pt", alias="HELMET_MODEL_PATH"
+    )
+    helmet_confidence: float = Field(default=0.4, alias="HELMET_CONFIDENCE")
+    waterlogging_model_path: str = Field(
+        default="models/waterlogging-world.pt", alias="WATERLOGGING_MODEL_PATH"
+    )
+    waterlogging_confidence: float = Field(
+        default=0.2, alias="WATERLOGGING_CONFIDENCE"
+    )
+    wrong_way_min_displacement_ratio: float = Field(
+        default=0.08, alias="WRONG_WAY_MIN_DISPLACEMENT_RATIO"
+    )
+    wrong_way_min_observations: int = Field(
+        default=3, alias="WRONG_WAY_MIN_OBSERVATIONS"
+    )
     allow_model_download: bool = Field(default=False, alias="ALLOW_MODEL_DOWNLOAD")
     congestion_vehicle_threshold: int = Field(
         default=5, alias="CONGESTION_VEHICLE_THRESHOLD"

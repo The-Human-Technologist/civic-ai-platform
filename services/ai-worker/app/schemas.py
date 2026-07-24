@@ -22,7 +22,15 @@ CivicDetectionClass = Literal[
     "road_blockage",
     "congestion",
     "wrong_way_driving",
+    "helmet_violation",
     "unknown",
+]
+AnalysisModule = Literal["traffic", "civic", "helmet", "waterlogging", "wrong_way"]
+ExpectedDirection = Literal[
+    "left_to_right",
+    "right_to_left",
+    "top_to_bottom",
+    "bottom_to_top",
 ]
 Severity = Literal["low", "medium", "high", "critical"]
 HumanReviewStatus = Literal["pending", "confirmed", "rejected", "needs_field_verification"]
@@ -81,6 +89,18 @@ class VideoJobRequest(BaseModel):
     sourceType: ProcessingSourceType = "uploaded_video"
     locationLabel: Optional[str] = None
     selectedScenario: Optional[str] = None
+    analysisModules: list[AnalysisModule] = Field(
+        default_factory=lambda: ["traffic", "civic", "helmet", "waterlogging"]
+    )
+    expectedDirection: Optional[ExpectedDirection] = None
+
+
+class ModelModuleStatus(BaseModel):
+    available: bool
+    modelName: Optional[str] = None
+    classes: list[str] = Field(default_factory=list)
+    experimental: bool = False
+    note: Optional[str] = None
 
 
 class WorkerJobResponse(BaseModel):
@@ -98,3 +118,6 @@ class WorkerJobResponse(BaseModel):
     processingMs: int = 0
     objectsDetected: int = 0
     classCounts: dict[str, int] = Field(default_factory=dict)
+    modelsUsed: list[str] = Field(default_factory=list)
+    requestedModules: list[AnalysisModule] = Field(default_factory=list)
+    moduleStatus: dict[str, ModelModuleStatus] = Field(default_factory=dict)

@@ -7,7 +7,14 @@ from pathlib import Path
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 from app.config import settings
-from app.detectors import DetectorContext, MockCivicDetector, YoloCivicDetector, resolve_device
+from app.detectors import (
+    ANALYSIS_MODULES,
+    DetectorContext,
+    MockCivicDetector,
+    YoloCivicDetector,
+    get_module_status,
+    resolve_device,
+)
 from app.schemas import DemoJobRequest, WorkerJobResponse
 
 app = FastAPI(
@@ -21,17 +28,20 @@ ALLOWED_CONTENT_TYPES = {"video/mp4", "video/webm", "video/quicktime", "video/x-
 
 @app.get("/health")
 def health():
-    model_path = Path(settings.yolo_model_path)
-    model_available = model_path.is_file() or settings.allow_model_download
+    module_status = get_module_status()
+    model_available = module_status["traffic"].available
     return {
         "ok": True,
         "service": "civic-ai-worker",
         "mode": "yolo-authorized-upload",
         "realInferenceEnabled": model_available,
-        "modelName": model_path.name,
+        "modelName": Path(settings.yolo_model_path).name,
         "modelAvailable": model_available,
         "device": resolve_device(),
         "privacyMaskingEnabled": settings.privacy_masking_enabled,
+        "moduleStatus": {
+            name: status.model_dump() for name, status in module_status.items()
+        },
     }
 
 
@@ -62,6 +72,8 @@ async def process_video(
     locationLabel: str = Form(...),
     authorizationReference: str = Form(...),
     authorizationConfirmed: bool = Form(...),
+    analysisModules: str = Form("traffic,civic,helmet,waterlogging"),
+    expectedDirection: str | None = Form(None),
 ):
     if not authorizationConfirmed or not authorizationReference.strip():
         raise HTTPException(
@@ -70,6 +82,24 @@ async def process_video(
         )
     if video.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(status_code=415, detail="Unsupported video content type.")
+    requested_modules = [
+        value.strip() for value in analysisModules.split(",") if value.strip()
+    ]
+    if not requested_modules or any(value not in ANALYSIS_MODULES for value in requested_modules):
+        raise HTTPException(status_code=422, detail="Invalid analysis module selection.")
+    valid_directions = {
+        "left_to_right",
+        "right_to_left",
+        "top_to_bottom",
+        "bottom_to_top",
+    }
+    if expectedDirection and expectedDirection not in valid_directions:
+        raise HTTPException(status_code=422, detail="Invalid expected travel direction.")
+    if "wrong_way" in requested_modules and not expectedDirection:
+        raise HTTPException(
+            status_code=422,
+            detail="Expected travel direction is required for wrong-way analysis.",
+        )
 
     suffix = Path(video.filename or "clip.mp4").suffix.lower() or ".mp4"
     max_bytes = settings.max_video_upload_mb * 1024 * 1024
@@ -94,6 +124,8 @@ async def process_video(
                 job_id=jobId,
                 video_name=video.filename,
                 location_label=locationLabel.strip(),
+                analysis_modules=requested_modules,  # type: ignore[arg-type]
+                expected_direction=expectedDirection,  # type: ignore[arg-type]
             ),
         )
         return WorkerJobResponse(
@@ -101,12 +133,7 @@ async def process_video(
             status="completed",
             progress=100,
             detections=run.detections,
-            limitations=[
-                "Alerts are advisory and require human review.",
-                "Standard weights detect people/vehicles; specialist civic classes require custom weights.",
-                "No facial recognition and no automatic enforcement.",
-                "No live CCTV or RTSP intake.",
-            ],
+            limitations=run.limitations + ["No live CCTV or RTSP intake."],
             note=(
                 f"Real YOLO inference completed on {run.frames_analyzed} sampled frames. "
                 "The uploaded clip and decoded frames were deleted after processing."
@@ -118,6 +145,9 @@ async def process_video(
             processingMs=run.processing_ms,
             objectsDetected=run.objects_detected,
             classCounts=run.class_counts,
+            modelsUsed=run.models_used,
+            requestedModules=run.requested_modules,
+            moduleStatus=run.module_status,
         )
     except HTTPException:
         raise

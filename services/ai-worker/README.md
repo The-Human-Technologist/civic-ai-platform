@@ -8,7 +8,10 @@ Local FastAPI worker for real, privacy-first YOLO analysis of explicitly authori
 - sampled video processing (1 FPS by default)
 - real person and vehicle detection from standard pretrained weights
 - conservative congestion advisories from person/vehicle density
-- custom civic-class support when `YOLO_MODEL_PATH` points to trained weights
+- pothole, road-damage, and garbage advisories from a civic specialist checkpoint
+- helmet/non-helmet advisories from a specialist checkpoint
+- experimental waterlogging advisories from a small YOLO-World checkpoint
+- wrong-way advisories from YOLO26 + ByteTrack and a supplied camera direction
 - whole-person and whole-vehicle masking before an evidence image leaves the worker
 - immediate deletion of the uploaded source clip and decoded frames
 - mandatory authorization reference and human-review status
@@ -45,24 +48,23 @@ npm run dev
 Then open `/dashboard/upload`, check worker health, select an authorized clip, enter its location
 and authorization/licence reference, confirm authorization, and run analysis.
 
-## Standard versus custom weights
+## Model modules
 
-`yolo26n.pt` is a general COCO checkpoint. It detects people and vehicles and supports the real
-congestion advisory in this repository. It does not honestly detect potholes, waterlogging,
-garbage overflow, wrong-way driving, or helmet violations.
+The worker uses four ignored local checkpoints and loads them sequentially so the target RTX 3050
+does not have to hold every network in 4 GB VRAM at once:
 
-To add those classes, train/evaluate a civic dataset and set:
+- `yolo26n.pt`: people/vehicles, congestion, and ByteTrack direction
+- `civic-road-issues.pt`: pothole, road damage, and garbage
+- `helmet-candidate.pt`: helmet/non-helmet advisory
+- `waterlogging-world.pt`: experimental open-vocabulary standing-water advisory
 
-```dotenv
-YOLO_MODEL_PATH=models/civic-best.pt
-```
-
-Recognized custom class names are documented in `app/detectors.py`. Model weights are intentionally
-gitignored and must never be committed with private footage.
+Run `python scripts/bootstrap_model.py` to install them and `python scripts/doctor.py` to verify
+their presence and CUDA. Weights are intentionally gitignored. See
+`docs/MODEL_PROVENANCE.md` for sources, hashes, licences, and limitations.
 
 ## API
 
 - `GET /health`
 - `POST /process-video` (multipart: video, jobId, locationLabel, authorizationReference,
-  authorizationConfirmed)
+  authorizationConfirmed, analysisModules, optional expectedDirection)
 - `POST /process-sample-job` (synthetic workflow training only)

@@ -54,6 +54,9 @@ Full product context: [README.md](README.md)
 - [x] Add privacy-masked evidence frames to human review
 - [x] Delete source video and decoded frames after each run
 - [x] Add configurable custom civic checkpoint support
+- [x] Add sequential pothole/garbage, helmet, and waterlogging specialist modules
+- [x] Add ByteTrack wrong-way advisory with per-camera expected direction
+- [x] Expose per-module readiness and model provenance in the operator workflow
 - [x] Route completed mock/worker job detections into the existing human-review UI
 - [x] Validate processing-job transitions and disable direct public job mutation
 - [x] Require written authorization metadata before controlled upload URL requests
@@ -81,7 +84,7 @@ model provenance and confidence-backed advisory events, privacy-mask evidence,
 delete the source clip, and route results into mandatory human review.
 
 **Production work that remains:** persistent review/audit records, authenticated
-roles, an async queue with retries, evaluated custom civic weights, observability,
+roles, an async queue with retries, independently evaluated local civic weights, observability,
 and a formally authorized field pilot.
 
 ---
